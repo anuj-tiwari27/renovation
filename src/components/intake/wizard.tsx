@@ -91,10 +91,9 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
   const { answered, total } = progressOf(set, answers);
   const pct = total ? Math.round((answered / total) * 100) : 0;
 
-  const scrollToTop = React.useCallback(() => {
-    if (typeof window === "undefined") return;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const next = async () => {
     const missing = missingRequired(set, answers);
