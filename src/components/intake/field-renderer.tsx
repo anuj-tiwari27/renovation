@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -103,13 +102,44 @@ function renderInput(field: Field, value: unknown, onChange: (v: unknown) => voi
           onChange={(e) => onChange(e.target.value || null)}
         />
       );
-    case "boolean":
+    case "boolean": {
+      const v: boolean | null =
+        value === true ? true : value === false ? false : null;
+      const segBase =
+        "flex-1 sm:flex-none px-5 py-2 text-sm font-medium rounded-md transition-colors min-h-11 sm:min-h-9";
       return (
-        <div className="flex items-center gap-3">
-          <Switch checked={Boolean(value)} onCheckedChange={(v) => onChange(v)} id={field.id} />
-          <span className="text-sm text-muted-foreground">{value ? "Yes" : "No"}</span>
+        <div
+          role="radiogroup"
+          aria-labelledby={field.id}
+          className="inline-flex w-full max-w-xs items-stretch gap-1 rounded-lg border bg-muted/40 p-1"
+        >
+          <button
+            type="button"
+            role="radio"
+            aria-checked={v === true}
+            onClick={() => onChange(true)}
+            className={cn(
+              segBase,
+              v === true ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-background",
+            )}
+          >
+            Yes
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={v === false}
+            onClick={() => onChange(false)}
+            className={cn(
+              segBase,
+              v === false ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-background",
+            )}
+          >
+            No
+          </button>
         </div>
       );
+    }
     case "select":
       return (
         <Select value={(value as string) ?? ""} onValueChange={(v) => onChange(v)}>
@@ -250,34 +280,48 @@ function renderInput(field: Field, value: unknown, onChange: (v: unknown) => voi
       );
     }
     case "image_cards": {
+      const anyHasImage = field.options?.some((o) => o.imageUrl);
       return (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {field.options?.map((o) => {
             const checked = value === o.value;
+            // With imageUrl: hero card (4:3 aspect, label overlaid bottom).
+            // Without: compact card with label + description (no fixed aspect ratio).
             return (
               <button
                 type="button"
                 key={o.value}
                 onClick={() => onChange(o.value)}
                 className={cn(
-                  "group relative flex aspect-[4/3] flex-col items-start justify-end overflow-hidden rounded-xl border bg-card p-4 text-left shadow-sm transition hover:shadow-md",
-                  checked && "ring-2 ring-primary",
+                  "group relative flex overflow-hidden rounded-xl border bg-card text-left shadow-sm transition hover:shadow-md",
+                  o.imageUrl
+                    ? "aspect-[4/3] flex-col items-start justify-end p-4"
+                    : "items-start gap-3 p-4",
+                  // When some cards in this set have images, keep heights uniform-ish on the imageless ones too
+                  !o.imageUrl && anyHasImage && "min-h-[88px]",
+                  checked && "border-primary ring-2 ring-primary",
                 )}
                 style={
                   o.imageUrl
-                    ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.55), transparent), url(${o.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                    ? {
+                        backgroundImage: `linear-gradient(to top, rgba(0,0,0,.55), transparent), url(${o.imageUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }
                     : undefined
                 }
               >
-                <div className={cn("text-sm font-medium", o.imageUrl && "text-white")}>{o.label}</div>
-                {o.description && (
-                  <div className={cn("text-xs", o.imageUrl ? "text-white/85" : "text-muted-foreground")}>
-                    {o.description}
-                  </div>
-                )}
+                <div className="flex-1">
+                  <div className={cn("text-sm font-medium", o.imageUrl && "text-white")}>{o.label}</div>
+                  {o.description && (
+                    <div className={cn("mt-0.5 text-xs", o.imageUrl ? "text-white/85" : "text-muted-foreground")}>
+                      {o.description}
+                    </div>
+                  )}
+                </div>
                 {checked && (
-                  <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
-                    <Check className="h-3.5 w-3.5" />
+                  <span className="absolute right-2 top-2 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                    <Check className="h-3 w-3" />
                   </span>
                 )}
               </button>

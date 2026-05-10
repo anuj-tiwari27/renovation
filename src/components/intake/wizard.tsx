@@ -44,6 +44,13 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Belt-and-braces: also scroll to top whenever the step actually changes,
+  // so deep-linked or back-button navigation lands at the top.
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [stepIdx]);
+
   const current = plan[stepIdx];
   const set: QuestionSet | undefined = current?.set;
   const key = set ? draftKey(projectId, set.slug, current.roomKind ?? null) : "";
@@ -84,6 +91,11 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
   const { answered, total } = progressOf(set, answers);
   const pct = total ? Math.round((answered / total) * 100) : 0;
 
+  const scrollToTop = React.useCallback(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   const next = async () => {
     const missing = missingRequired(set, answers);
     if (missing.length) {
@@ -94,20 +106,28 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
     setLastStep(projectId, stepIdx + 1);
     setStepIdx((i) => Math.min(plan.length, i + 1));
     setSaving(false);
+    scrollToTop();
   };
 
   const prev = () => {
     setLastStep(projectId, Math.max(0, stepIdx - 1));
     setStepIdx((i) => Math.max(0, i - 1));
+    scrollToTop();
+  };
+
+  const jumpToStep = (i: number) => {
+    setLastStep(projectId, i);
+    setStepIdx(i);
+    scrollToTop();
   };
 
   return (
     <div className="space-y-6">
-      <StepIndicator plan={plan} current={stepIdx} answers={drafts} projectId={projectId} />
+      <StepIndicator plan={plan} current={stepIdx} answers={drafts} projectId={projectId} onJump={jumpToStep} />
 
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div>
+        <CardHeader className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
+          <div className="min-w-0">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">
               Step {stepIdx + 1} of {plan.length}
               {current.roomKind ? ` · ${current.roomKind.replace("_", " ")}` : ""}
@@ -115,7 +135,7 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
             <CardTitle className="mt-1">{set.name}</CardTitle>
             {set.description && <CardDescription>{set.description}</CardDescription>}
           </div>
-          <Badge variant="secondary" className="gap-1">
+          <Badge variant="secondary" className="gap-1 self-start">
             <Save className="h-3 w-3" /> autosaving
           </Badge>
         </CardHeader>
@@ -183,36 +203,76 @@ function StepIndicator({
   current,
   answers,
   projectId,
+  onJump,
 }: {
   plan: ReturnType<typeof planForProject>;
   current: number;
   answers: Record<string, Answers>;
   projectId: string;
+  onJump: (i: number) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {plan.map((p, i) => {
-        const k = `${projectId}::${p.set.slug}::${p.roomKind ?? "_"}`;
-        const a = answers[k] ?? {};
-        const { answered, total } = progressOf(p.set, a);
-        const done = total > 0 && answered === total;
-        const active = i === current;
-        return (
-          <div
-            key={`${p.set.slug}-${p.roomKind ?? "x"}-${i}`}
-            className={cn(
-              "flex items-center gap-2 rounded-full border px-3 py-1 text-xs",
-              active && "border-primary bg-primary/10 text-primary",
-              !active && done && "border-emerald-300 text-emerald-700 dark:text-emerald-300",
-            )}
-          >
-            <span className="font-medium">{i + 1}.</span>
-            <span>{p.set.name}{p.roomKind ? ` · ${p.roomKind.replace("_", " ")}` : ""}</span>
-            {done && <CheckCircle2 className="h-3 w-3" />}
-          </div>
-        );
-      })}
-    </div>
+    <nav aria-label="Discovery steps" className="-mx-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
+      <ol className="flex min-w-max items-start gap-0">
+        {plan.map((p, i) => {
+          const k = `${projectId}::${p.set.slug}::${p.roomKind ?? "_"}`;
+          const a = answers[k] ?? {};
+          const { answered, total } = progressOf(p.set, a);
+          const done = total > 0 && answered === total;
+          const active = i === current;
+          const past = i < current;
+          const isLast = i === plan.length - 1;
+          // The line segment to the next step is "filled" if this step is complete or in the past.
+          const lineFilled = past || done;
+
+          return (
+            <li
+              key={`${p.set.slug}-${p.roomKind ?? "x"}-${i}`}
+              className="flex flex-1 items-start"
+            >
+              <div className="flex min-w-[88px] flex-col items-center sm:min-w-[112px]">
+                <button
+                  type="button"
+                  onClick={() => onJump(i)}
+                  aria-current={active ? "step" : undefined}
+                  className={cn(
+                    "grid h-8 w-8 place-items-center rounded-full border-2 text-xs font-semibold transition-colors",
+                    active && "border-primary bg-primary text-primary-foreground shadow-sm",
+                    !active && done && "border-emerald-500 bg-emerald-500 text-white",
+                    !active && !done && past && "border-primary bg-background text-primary",
+                    !active && !done && !past && "border-border bg-background text-muted-foreground",
+                  )}
+                >
+                  {done && !active ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onJump(i)}
+                  className={cn(
+                    "mt-2 max-w-[7rem] text-center text-[11px] leading-tight sm:max-w-[8rem] sm:text-xs",
+                    active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <span className="line-clamp-2">
+                    {p.set.name}
+                    {p.roomKind ? ` · ${p.roomKind.replace("_", " ")}` : ""}
+                  </span>
+                </button>
+              </div>
+              {!isLast && (
+                <div
+                  aria-hidden
+                  className={cn(
+                    "mt-4 h-0.5 flex-1 min-w-[24px] rounded-full transition-colors",
+                    lineFilled ? "bg-primary" : "bg-border",
+                  )}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }
 
