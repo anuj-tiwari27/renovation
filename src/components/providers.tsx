@@ -5,6 +5,7 @@ import { ThemeProvider as NextThemes } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineWatcher } from "@/components/offline-watcher";
+import { InstallPrompt } from "@/components/pwa-install";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = React.useState(
@@ -21,6 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={client}>
         <OfflineWatcher />
         {children}
+        <InstallPrompt />
         <Toaster />
       </QueryClientProvider>
     </NextThemes>

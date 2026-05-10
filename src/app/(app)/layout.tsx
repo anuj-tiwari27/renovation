@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-svh">
       <Sidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           user={
             profile
@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               : { full_name: "Preview", email: "preview@local", role: "admin" }
           }
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8">{children}</main>
       </div>
     </div>
   );

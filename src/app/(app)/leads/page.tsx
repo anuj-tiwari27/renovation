@@ -37,19 +37,23 @@ export default async function LeadsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Leads</h1>
-          <p className="text-muted-foreground">Drag-free kanban — open a card to update status.</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Leads</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Drag-free kanban — open a card to update status.
+          </p>
         </div>
-        <Button asChild><Link href="/intake/new">New intake</Link></Button>
+        <Button asChild className="self-start sm:self-auto">
+          <Link href="/intake/new">New intake</Link>
+        </Button>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="-mx-3 flex gap-3 overflow-x-auto px-3 pb-2 sm:-mx-0 sm:gap-4 sm:px-0">
         {COLUMNS.map((col) => {
           const items = rows.filter((r) => r.status === col.id);
           return (
-            <div key={col.id} className="w-72 shrink-0">
+            <div key={col.id} className="w-[260px] shrink-0 sm:w-72">
               <Card className="bg-muted/40">
                 <CardHeader className="flex-row items-center justify-between space-y-0 py-3">
                   <CardTitle className="text-sm">{col.label}</CardTitle>

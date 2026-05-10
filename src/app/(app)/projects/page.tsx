@@ -28,8 +28,8 @@ export default async function ProjectsPage() {
       </div>
       <Card>
         <CardHeader><CardTitle>All projects ({rows.length})</CardTitle></CardHeader>
-        <CardContent>
-          <table className="w-full text-sm">
+        <CardContent className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="pb-3">Title</th>

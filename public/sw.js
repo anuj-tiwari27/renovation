@@ -6,10 +6,10 @@
  *  - POST/PUT/PATCH/DELETE for mutating endpoints: queued via Background Sync (handled in app via IndexedDB; SW relays the trigger)
  */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const PRECACHE = `precache-${CACHE_VERSION}`;
 const RUNTIME = `runtime-${CACHE_VERSION}`;
-const APP_SHELL = ["/", "/offline", "/manifest.webmanifest"];
+const APP_SHELL = ["/", "/offline", "/manifest.webmanifest", "/icons/192", "/icons/512"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -36,6 +36,9 @@ const isHTML = (request) =>
 const isStatic = (url) =>
   url.pathname.startsWith("/_next/static") ||
   url.pathname.startsWith("/icons/") ||
+  url.pathname === "/icon" ||
+  url.pathname === "/apple-icon" ||
+  url.pathname === "/manifest.webmanifest" ||
   url.pathname.startsWith("/fonts/");
 
 self.addEventListener("fetch", (event) => {
@@ -107,8 +110,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || "Remodel Studio", {
       body: data.body || "",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/icons/192",
+      badge: "/icons/192",
       data: data.url ? { url: data.url } : undefined,
     }),
   );

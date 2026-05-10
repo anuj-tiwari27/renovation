@@ -61,18 +61,20 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-end justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Snapshot of your remodeling business.</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Dashboard</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Snapshot of your remodeling business.
+          </p>
         </div>
-        <Button asChild>
+        <Button asChild className="self-start sm:self-auto">
           <Link href="/intake/new">Start an intake</Link>
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {kpis.map((k) => (
           <Card key={k.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -80,7 +82,7 @@ export default async function DashboardPage() {
               <k.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">{k.value}</div>
+              <div className="text-2xl font-semibold sm:text-3xl">{k.value}</div>
               <p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
             </CardContent>
           </Card>
@@ -93,11 +95,11 @@ export default async function DashboardPage() {
             <CardTitle>Pipeline</CardTitle>
             <CardDescription>Recent projects across stages</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             {projects.length === 0 ? (
               <EmptyState />
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[520px] text-sm">
                 <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="pb-3 font-medium">Project</th>

@@ -87,13 +87,13 @@ export default async function EstimatePage({ params }: Props) {
             Categories: {CATEGORIES.join(", ")}. Add/edit items via API or the admin panel.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {rows.length === 0 ? (
             <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
               No line items yet. Use the AI summary as a starting point and add items here.
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="pb-3">Category</th>

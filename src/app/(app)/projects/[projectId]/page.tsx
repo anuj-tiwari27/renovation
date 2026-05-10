@@ -42,15 +42,15 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <div className="text-xs uppercase tracking-wide text-muted-foreground">{p.type.replace("_"," ")}</div>
-          <h1 className="text-3xl font-semibold tracking-tight">{p.title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{p.title}</h1>
           <div className="mt-1 text-sm text-muted-foreground">
             {c?.full_name ?? "—"} {c?.address_city ? `· ${c.address_city}, ${c.address_state ?? ""}` : ""}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="capitalize">{p.status.replace("_"," ")}</Badge>
           <Button asChild>
             <Link href={`/intake/${p.id}?type=${p.type}&rooms=${encodeURIComponent(p.rooms.join(","))}`}>

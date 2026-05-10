@@ -23,11 +23,11 @@ export default async function SettingsPage() {
       </div>
       <Card>
         <CardHeader><CardTitle>Users ({profiles.length})</CardTitle><CardDescription>RLS enforces role-based access automatically.</CardDescription></CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {profiles.length === 0 ? (
             <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">No users yet.</div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <tr><th className="pb-3">Name</th><th className="pb-3">Email</th><th className="pb-3">Role</th><th className="pb-3">Status</th></tr>
               </thead>

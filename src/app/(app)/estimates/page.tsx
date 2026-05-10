@@ -35,13 +35,13 @@ export default async function EstimatesPage() {
       </div>
       <Card>
         <CardHeader><CardTitle>All estimates ({rows.length})</CardTitle><CardDescription>Click through to edit.</CardDescription></CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {rows.length === 0 ? (
             <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
               No estimates yet.
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <tr><th className="pb-3">Project</th><th className="pb-3">Status</th><th className="pb-3 text-right">Total</th><th className="pb-3">Updated</th></tr>
               </thead>

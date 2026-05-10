@@ -166,11 +166,11 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between">
+      <div className="sticky bottom-0 -mx-3 flex items-center justify-between gap-2 border-t bg-background/90 px-3 py-3 backdrop-blur sm:relative sm:bottom-auto sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
         <Button variant="ghost" onClick={prev} disabled={stepIdx === 0}>
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
-        <Button onClick={next} disabled={saving}>
+        <Button onClick={next} disabled={saving} className="flex-1 sm:flex-none">
           {stepIdx === plan.length - 1 ? "Finish" : "Next"} <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
