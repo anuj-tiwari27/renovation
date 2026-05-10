@@ -2,19 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Plus, Moon, Sun, LogOut, Wifi, WifiOff, Menu, Hammer } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Plus, Wifi, WifiOff, Menu, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/layout/sidebar";
 import { InstallPrompt } from "@/components/pwa-install";
-import { createClient } from "@/lib/supabase/client";
-import { initialsOf } from "@/lib/utils";
 import { env } from "@/lib/env";
 
-export function Topbar({ user }: { user?: { full_name: string | null; email: string; role: string } }) {
-  const { theme, setTheme } = useTheme();
+export function Topbar() {
   const [online, setOnline] = React.useState(true);
 
   React.useEffect(() => {
@@ -28,11 +24,6 @@ export function Topbar({ user }: { user?: { full_name: string | null; email: str
       window.removeEventListener("offline", off);
     };
   }, []);
-
-  const signOut = async () => {
-    await createClient().auth.signOut();
-    location.href = "/login";
-  };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-border bg-background/80 px-3 backdrop-blur sm:px-4 lg:px-8">
@@ -59,7 +50,6 @@ export function Topbar({ user }: { user?: { full_name: string | null; email: str
           {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
           {online ? "Online" : "Offline"}
         </Badge>
-        {/* Tiny dot version for very small screens */}
         <span
           aria-hidden
           className={
@@ -82,30 +72,6 @@ export function Topbar({ user }: { user?: { full_name: string | null; email: str
         <Button asChild size="icon" className="sm:hidden" aria-label="New intake">
           <Link href="/intake/new"><Plus className="h-4 w-4" /></Link>
         </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          aria-label="Toggle theme"
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
-
-        {user && (
-          <div className="flex items-center gap-2 pl-1 sm:pl-2">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-              {initialsOf(user.full_name || user.email)}
-            </div>
-            <div className="hidden text-right text-xs md:block">
-              <div className="max-w-[140px] truncate font-medium">{user.full_name ?? user.email}</div>
-              <div className="capitalize text-muted-foreground">{user.role.replace("_", " ")}</div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </div>
     </header>
   );

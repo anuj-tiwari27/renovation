@@ -5,10 +5,8 @@ import { getCurrentProfile } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // If Supabase isn't wired up yet, render the shell anyway so devs can preview UI.
-  let profile: Awaited<ReturnType<typeof getCurrentProfile>> = null;
   if (isSupabaseConfigured()) {
-    profile = await getCurrentProfile();
+    const profile = await getCurrentProfile();
     if (!profile) redirect("/login");
   }
 
@@ -16,13 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-svh">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar
-          user={
-            profile
-              ? { full_name: profile.full_name, email: profile.email, role: profile.role }
-              : { full_name: "Preview", email: "preview@local", role: "admin" }
-          }
-        />
+        <Topbar />
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8">{children}</main>
       </div>
     </div>
