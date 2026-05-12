@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { FieldRenderer } from "./field-renderer";
+import { ReviewAnswers } from "./review-answers";
 import { evaluate, missingRequired, progressOf, visibleFields, visibleSections } from "@/lib/intake/logic";
 import { planForProject } from "@/lib/intake/schemas";
 import type { Answers, QuestionSet } from "@/lib/intake/types";
@@ -34,6 +35,7 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
   const { drafts, patchDraft, setDraft, lastStep, setLastStep } = useIntakeStore();
   const [stepIdx, setStepIdx] = React.useState(lastStep[projectId] ?? 0);
   const [saving, setSaving] = React.useState(false);
+  const [reviewing, setReviewing] = React.useState(false);
 
   React.useEffect(() => {
     if (!initialAnswers) return;
@@ -49,7 +51,7 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [stepIdx]);
+  }, [stepIdx, reviewing]);
 
   const current = plan[stepIdx];
   const set: QuestionSet | undefined = current?.set;
@@ -68,6 +70,30 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
     });
   };
 
+  // Review mode — shown when the user clicks "Review answers" at the end OR
+  // from any step. Renders a scrollable one-pager with per-section Edit buttons.
+  if (reviewing) {
+    return (
+      <ReviewAnswers
+        plan={plan}
+        projectId={projectId}
+        drafts={drafts}
+        onEditAll={() => {
+          setReviewing(false);
+          setStepIdx(0);
+          setLastStep(projectId, 0);
+        }}
+        onEditStep={(i) => {
+          setReviewing(false);
+          setStepIdx(i);
+          setLastStep(projectId, i);
+        }}
+        onGenerateSummary={() => router.push(`/projects/${projectId}/summary`)}
+        onExit={() => setReviewing(false)}
+      />
+    );
+  }
+
   if (!set) {
     return (
       <Card>
@@ -77,11 +103,13 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
             Every section is filled in. Generate a summary, scope draft, and PDF report next.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-2">
+        <CardContent className="flex flex-wrap gap-2">
           <Button onClick={() => router.push(`/projects/${projectId}/summary`)}>
             <CheckCircle2 className="h-4 w-4" /> Generate summary
           </Button>
-          <Button variant="outline" onClick={() => setStepIdx(0)}>Review answers</Button>
+          <Button variant="outline" onClick={() => setReviewing(true)}>
+            Review answers
+          </Button>
         </CardContent>
       </Card>
     );
@@ -189,9 +217,14 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
         <Button variant="ghost" onClick={prev} disabled={stepIdx === 0}>
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
-        <Button onClick={next} disabled={saving} className="flex-1 sm:flex-none">
-          {stepIdx === plan.length - 1 ? "Finish" : "Next"} <ArrowRight className="h-4 w-4" />
-        </Button>
+        <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
+          <Button variant="outline" onClick={() => setReviewing(true)} className="hidden sm:inline-flex">
+            Review
+          </Button>
+          <Button onClick={next} disabled={saving} className="flex-1 sm:flex-none">
+            {stepIdx === plan.length - 1 ? "Finish" : "Next"} <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

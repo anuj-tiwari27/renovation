@@ -59,17 +59,6 @@ export const projectOverviewSet: QuestionSet = {
       ],
     },
     {
-      id: "motivation",
-      title: "Why now?",
-      description: "What's driving this remodel — and what must we get right?",
-      fields: [
-        { id: "motivation", kind: "longtext", label: "Why are you remodeling?", placeholder: "Outdated finishes, growing family, better workflow…", bind: { table: "projects", column: "motivation" } },
-        { id: "pain_points", kind: "longtext", label: "Biggest pain points today", placeholder: "Not enough storage, dark, awkward layout…", bind: { table: "projects", column: "pain_points" } },
-        { id: "must_stay_unchanged", kind: "longtext", label: "What must stay unchanged?", helper: "Sentimental items, recent upgrades, structural elements", bind: { table: "projects", column: "must_stay_unchanged" } },
-        { id: "top_priorities", kind: "longtext", label: "Top 3 priorities", placeholder: "1) … 2) … 3) …", bind: { table: "projects", column: "top_priorities" } },
-      ],
-    },
-    {
       id: "weighting",
       title: "Calibrate the design",
       description: "These sliders set the tone of every recommendation.",

@@ -46,28 +46,5 @@ export const clientInfoSet: QuestionSet = {
         },
       ],
     },
-    {
-      id: "household",
-      title: "Household & decisions",
-      fields: [
-        { id: "primary_residence", kind: "boolean", label: "Is this your primary residence?", bind: { table: "clients", column: "primary_residence" } },
-        { id: "years_in_home", kind: "number", label: "How long have you lived here?", unit: "years", bind: { table: "clients", column: "years_in_home" } },
-        { id: "stay_duration", kind: "select", label: "How long do you plan to stay?", options: [
-          { value: "lt_2", label: "Less than 2 years" },
-          { value: "2_5", label: "2 – 5 years" },
-          { value: "5_10", label: "5 – 10 years" },
-          { value: "10_plus", label: "10+ years / forever home" },
-        ]},
-        { id: "planning_to_sell", kind: "boolean", label: "Are you planning to sell soon?", bind: { table: "clients", column: "planning_to_sell" } },
-        { id: "remodeled_before", kind: "boolean", label: "Have you remodeled before?", bind: { table: "clients", column: "remodeled_before" } },
-        { id: "decision_makers", kind: "longtext", label: "Who else is involved in decisions?", helper: "Name(s) and role — e.g. 'spouse Jordan, primary cook'.", bind: { table: "clients", column: "decision_makers" } },
-        { id: "occupancy_status", kind: "select", label: "Will you be living in the home during construction?", options: [
-          { value: "yes_full", label: "Yes, throughout" },
-          { value: "yes_partial", label: "Yes, partially" },
-          { value: "relocate", label: "Relocating during work" },
-          { value: "vacant", label: "Home will be vacant" },
-        ], bind: { table: "clients", column: "occupancy_status" }},
-      ],
-    },
   ],
 };

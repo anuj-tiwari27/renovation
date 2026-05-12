@@ -106,12 +106,12 @@ function renderInput(field: Field, value: unknown, onChange: (v: unknown) => voi
       const v: boolean | null =
         value === true ? true : value === false ? false : null;
       const segBase =
-        "flex-1 sm:flex-none px-5 py-2 text-sm font-medium rounded-md transition-colors min-h-11 sm:min-h-9";
+        "w-20 sm:w-16 h-10 sm:h-9 text-sm font-medium rounded-md transition-colors";
       return (
         <div
           role="radiogroup"
           aria-labelledby={field.id}
-          className="inline-flex w-full max-w-xs items-stretch gap-1 rounded-lg border bg-muted/40 p-1"
+          className="inline-flex items-stretch gap-1 rounded-lg border bg-muted/40 p-1"
         >
           <button
             type="button"
@@ -120,7 +120,9 @@ function renderInput(field: Field, value: unknown, onChange: (v: unknown) => voi
             onClick={() => onChange(true)}
             className={cn(
               segBase,
-              v === true ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-background",
+              v === true
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-foreground/70 hover:bg-background hover:text-foreground",
             )}
           >
             Yes
@@ -132,7 +134,9 @@ function renderInput(field: Field, value: unknown, onChange: (v: unknown) => voi
             onClick={() => onChange(false)}
             className={cn(
               segBase,
-              v === false ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-background",
+              v === false
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-foreground/70 hover:bg-background hover:text-foreground",
             )}
           >
             No

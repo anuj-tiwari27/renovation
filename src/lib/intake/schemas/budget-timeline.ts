@@ -15,16 +15,6 @@ export const budgetSet: QuestionSet = {
         { id: "budget_financing", kind: "boolean", label: "Need financing options?", bind: { table: "projects", column: "budget_financing" } },
       ],
     },
-    {
-      id: "tradeoffs",
-      title: "Trade-offs",
-      fields: [
-        { id: "willing_to_splurge", kind: "longtext", label: "Where are you willing to splurge?", bind: { table: "projects", column: "willing_to_splurge" } },
-        { id: "willing_to_save", kind: "longtext", label: "Where are you willing to save?", bind: { table: "projects", column: "willing_to_save" } },
-        { id: "phase_remodel_ok", kind: "boolean", label: "Phase the remodel if needed?", bind: { table: "projects", column: "phase_remodel_ok" } },
-        { id: "roi_importance", kind: "rating", label: "ROI importance", min: 0, max: 5 },
-      ],
-    },
   ],
 };
 
