@@ -11,8 +11,8 @@ import { env } from "@/lib/env";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: env.NEXT_PUBLIC_APP_NAME,
-    short_name: "CT Elite",
-    description: "CT Elite Remodel — kitchen, bath, and full-home discovery, intake, and estimation",
+    short_name: "CT Elite Remodeling",
+    description: "CT Elite Remodeling — kitchen, bath, and full-home discovery, intake, and estimation",
     start_url: "/dashboard",
     scope: "/",
     display: "standalone",

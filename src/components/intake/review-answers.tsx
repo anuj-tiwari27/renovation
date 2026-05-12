@@ -33,9 +33,9 @@ export function ReviewAnswers({
   onExit,
 }: ReviewAnswersProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Review your answers</h2>
           <p className="text-sm text-muted-foreground">
             Scroll through every section. Use <strong>Edit</strong> on any section to fix something, or
@@ -43,14 +43,14 @@ export function ReviewAnswers({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={onExit}>
+          <Button variant="outline" size="sm" onClick={onExit}>
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
-          <Button variant="outline" onClick={onEditAll}>
-            <Edit3 className="h-4 w-4" /> Edit responses
+          <Button variant="outline" size="sm" onClick={onEditAll}>
+            <Edit3 className="h-4 w-4" /> Edit
           </Button>
-          <Button onClick={onGenerateSummary}>
-            <Sparkles className="h-4 w-4" /> Generate summary
+          <Button size="sm" onClick={onGenerateSummary}>
+            <Sparkles className="h-4 w-4" /> Summary
           </Button>
         </div>
       </div>
@@ -117,20 +117,23 @@ export function ReviewAnswers({
         );
       })}
 
-      <div className="sticky bottom-0 -mx-3 flex items-center justify-between gap-2 border-t bg-background/90 px-3 py-3 backdrop-blur sm:relative sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-        <Button variant="outline" onClick={onEditAll}>
-          <Edit3 className="h-4 w-4" /> Edit responses
+      <div
+        className={cn(
+          "sticky bottom-0 -mx-3 grid grid-cols-2 gap-2 border-t bg-background/90 px-3 py-3 backdrop-blur",
+          "sm:relative sm:mx-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none",
+        )}
+      >
+        <Button variant="outline" onClick={onEditAll} className="col-span-2 sm:col-auto">
+          <Edit3 className="h-4 w-4" /> <span className="truncate">Edit responses</span>
         </Button>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <a href={`/api/pdf/${projectId}`} target="_blank" rel="noreferrer">
-              <FileDown className="h-4 w-4" /> Open report
-            </a>
-          </Button>
-          <Button onClick={onGenerateSummary}>
-            <Sparkles className="h-4 w-4" /> Generate summary
-          </Button>
-        </div>
+        <Button variant="outline" asChild>
+          <a href={`/api/pdf/${projectId}`} target="_blank" rel="noreferrer">
+            <FileDown className="h-4 w-4" /> <span className="truncate">Open report</span>
+          </a>
+        </Button>
+        <Button onClick={onGenerateSummary}>
+          <Sparkles className="h-4 w-4" /> <span className="truncate">Generate summary</span>
+        </Button>
       </div>
     </div>
   );

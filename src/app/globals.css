@@ -125,11 +125,13 @@ body {
   }
 }
 
-/* Touch-friendly tap targets for tablet onsite use */
+/*
+ * Touch-friendly tap targets for tablet/onsite use — scoped so it does NOT
+ * stretch tiny controls (checkboxes, radios, switches, timeline dots) into
+ * ovals. Apply only to elements that opt in via `data-tap`.
+ */
 @media (pointer: coarse) {
-  button,
-  [role="button"],
-  a {
+  [data-tap="comfort"] {
     min-height: 44px;
   }
 }

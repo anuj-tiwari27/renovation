@@ -1,4 +1,4 @@
-/* CT Elite Remodel service worker
+/* CT Elite Remodeling service worker
  * Strategy:
  *  - HTML navigations: network-first, fall back to cached app shell + offline page
  *  - Static assets (_next, fonts, icons): stale-while-revalidate
@@ -6,7 +6,7 @@
  *  - POST/PUT/PATCH/DELETE for mutating endpoints: queued via Background Sync (handled in app via IndexedDB; SW relays the trigger)
  */
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const PRECACHE = `precache-${CACHE_VERSION}`;
 const RUNTIME = `runtime-${CACHE_VERSION}`;
 const APP_SHELL = ["/", "/offline", "/manifest.webmanifest", "/icons/192", "/icons/512"];
@@ -104,11 +104,11 @@ self.addEventListener("push", (event) => {
     try {
       return event.data.json();
     } catch {
-      return { title: "CT Elite Remodel", body: event.data.text() };
+      return { title: "CT Elite Remodeling", body: event.data.text() };
     }
   })();
   event.waitUntil(
-    self.registration.showNotification(data.title || "CT Elite Remodel", {
+    self.registration.showNotification(data.title || "CT Elite Remodeling", {
       body: data.body || "",
       icon: "/icons/192",
       badge: "/icons/192",
