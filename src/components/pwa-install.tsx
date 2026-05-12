@@ -113,7 +113,7 @@ export function InstallPrompt({ variant = "card" }: { variant?: "card" | "button
         <Smartphone className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium">Install Remodel Studio</div>
+        <div className="text-sm font-medium">Install CT Elite Remodel</div>
         {iosHint ? (
           <p className="mt-0.5 text-xs text-muted-foreground">
             On iOS, tap the <Share className="-mt-0.5 inline h-3 w-3" /> share button → <em>Add to Home Screen</em>.

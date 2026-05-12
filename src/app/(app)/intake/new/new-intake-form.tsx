@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ChefHat, Bath, Home, Hammer, Building2 } from "lucide-react";
+import { ChefHat, Bath, Home, Layers, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ const TYPES: { value: ProjectType; label: string; blurb: string; icon: React.Com
   { value: "kitchen", label: "Kitchen", blurb: "Cabinets, counters, appliances, layout", icon: ChefHat },
   { value: "bathroom", label: "Bathroom", blurb: "Spa, vanity, shower, accessibility", icon: Bath },
   { value: "full_home", label: "Full home", blurb: "Whole-home program & systems", icon: Home },
-  { value: "multi_room", label: "Multi-room", blurb: "Two or more rooms together", icon: Hammer },
+  { value: "multi_room", label: "Multi-room", blurb: "Two or more rooms together", icon: Layers },
   { value: "commercial", label: "Commercial", blurb: "Light-commercial space", icon: Building2 },
 ];
 

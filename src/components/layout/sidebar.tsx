@@ -9,13 +9,13 @@ import {
   FileText,
   Calendar,
   Settings,
-  Hammer,
   Image as ImageIcon,
   BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { env } from "@/lib/env";
 import { SheetClose } from "@/components/ui/sheet";
+import { BrandMark } from "@/components/brand";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -33,7 +33,7 @@ export function SidebarNav({ closable = false }: { closable?: boolean }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-6">
-        <Hammer className="h-5 w-5 text-primary" />
+        <BrandMark size={28} />
         <span className="font-semibold">{env.NEXT_PUBLIC_APP_NAME}</span>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4">

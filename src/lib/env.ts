@@ -4,8 +4,8 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().or(z.literal("")),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(0),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
-  NEXT_PUBLIC_APP_NAME: z.string().default("Remodel Studio"),
-  NEXT_PUBLIC_COMPANY_NAME: z.string().default("Your Remodeling Company"),
+  NEXT_PUBLIC_APP_NAME: z.string().default("CT Elite Remodel"),
+  NEXT_PUBLIC_COMPANY_NAME: z.string().default("CT Elite Remodel"),
 });
 
 const parsed = schema.safeParse({

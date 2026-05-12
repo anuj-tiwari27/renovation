@@ -27,16 +27,17 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  --color-brand-50: #f5f7ff;
-  --color-brand-100: #e8edff;
-  --color-brand-200: #c8d3ff;
-  --color-brand-300: #9aaeff;
-  --color-brand-400: #6a83f5;
-  --color-brand-500: #4a63e7;
-  --color-brand-600: #3a4dc9;
-  --color-brand-700: #2f3da3;
-  --color-brand-800: #283482;
-  --color-brand-900: #1d2666;
+  /* CT Elite Remodel — gold + warm dark */
+  --color-brand-50: #fdf8e6;
+  --color-brand-100: #f9eebd;
+  --color-brand-200: #f3df85;
+  --color-brand-300: #ecca4c;
+  --color-brand-400: #d9b237;
+  --color-brand-500: #c9a437;
+  --color-brand-600: #b08b28;
+  --color-brand-700: #8b6b1c;
+  --color-brand-800: #5d4612;
+  --color-brand-900: #2e2106;
 
   --radius: 0.75rem;
   --radius-sm: calc(var(--radius) - 4px);
@@ -55,8 +56,9 @@
   --popover: 0 0% 100%;
   --popover-foreground: 224 30% 12%;
 
-  --primary: 230 70% 56%;
-  --primary-foreground: 0 0% 100%;
+  /* Gold primary; deep brand-700 paired with brand-foreground for contrast on white */
+  --primary: 42 71% 45%;
+  --primary-foreground: 30 33% 12%;
 
   --secondary: 220 14% 96%;
   --secondary-foreground: 224 30% 12%;
@@ -72,7 +74,7 @@
 
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 230 70% 56%;
+  --ring: 42 71% 45%;
 }
 
 .dark {

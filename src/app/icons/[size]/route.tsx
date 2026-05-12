@@ -10,7 +10,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ size: string }
   const size = parseInt(raw, 10);
   if (!ALLOWED.has(size)) return NextResponse.json({ error: "size not allowed" }, { status: 404 });
 
-  const fontSize = Math.round(size * 0.62);
+  const ctSize = Math.round(size * 0.42);
+  const eliteSize = Math.round(size * 0.1);
   return new ImageResponse(
     (
       <div
@@ -18,17 +19,44 @@ export async function GET(_req: Request, ctx: { params: Promise<{ size: string }
           width: "100%",
           height: "100%",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #4a63e7 0%, #2f3da3 100%)",
-          color: "white",
-          fontSize,
-          fontWeight: 700,
-          letterSpacing: -fontSize * 0.04,
-          fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          background: "#0b0b0b",
+          color: "#d4a73d",
+          fontFamily: "Georgia, 'Times New Roman', serif",
         }}
       >
-        R
+        <div
+          style={{
+            fontSize: ctSize,
+            fontWeight: 700,
+            letterSpacing: 4,
+            lineHeight: 1,
+          }}
+        >
+          CT
+        </div>
+        <div
+          style={{
+            marginTop: size * 0.04,
+            fontSize: eliteSize,
+            letterSpacing: eliteSize * 0.45,
+            color: "#f4d472",
+          }}
+        >
+          ELITE
+        </div>
+        <div
+          style={{
+            marginTop: size * 0.02,
+            fontSize: Math.round(eliteSize * 0.6),
+            letterSpacing: eliteSize * 0.3,
+            color: "#9c7416",
+          }}
+        >
+          REMODEL
+        </div>
       </div>
     ),
     { width: size, height: size },

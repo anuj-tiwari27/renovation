@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Plus, Wifi, WifiOff, Menu, Hammer } from "lucide-react";
+import { Plus, Wifi, WifiOff, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/layout/sidebar";
 import { InstallPrompt } from "@/components/pwa-install";
+import { BrandMark } from "@/components/brand";
 import { env } from "@/lib/env";
 
 export function Topbar() {
@@ -42,7 +43,7 @@ export function Topbar() {
 
         {/* App name (mobile only — desktop sidebar already shows it) */}
         <Link href="/dashboard" className="flex items-center gap-1.5 lg:hidden">
-          <Hammer className="h-4 w-4 text-primary" />
+          <BrandMark size={22} />
           <span className="truncate text-sm font-semibold">{env.NEXT_PUBLIC_APP_NAME}</span>
         </Link>
 
