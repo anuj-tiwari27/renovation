@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChefHat, Bath, Home, Sparkles, ShieldCheck, WifiOff, Layers } from "lucide-react";
-import { BrandMark, BrandLogo } from "@/components/brand";
+import { BrandMark } from "@/components/brand";
 import { env } from "@/lib/env";
 
 export default function LandingPage() {
@@ -35,12 +35,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/50 px-3 py-1 text-xs font-medium text-muted-foreground">
               <Sparkles className="h-3 w-3" /> Premium remodeling, end-to-end
             </span>
-            <div className="mt-5 sm:mt-6">
-              <BrandLogo height={80} className="max-w-full sm:hidden" />
-              <BrandLogo height={120} className="hidden max-w-full sm:block lg:hidden" />
-              <BrandLogo height={140} className="hidden max-w-full lg:block" />
-            </div>
-            <h1 className="mt-5 font-display text-2xl font-semibold leading-tight tracking-tight sm:mt-6 sm:text-3xl lg:text-4xl">
+            <h1 className="mt-5 font-display text-3xl font-semibold leading-tight tracking-tight sm:mt-6 sm:text-5xl lg:text-6xl">
               Kitchen, bath, full-home —
               <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent"> discovery to handover.</span>
             </h1>

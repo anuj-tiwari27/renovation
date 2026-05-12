@@ -21,16 +21,13 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#c9a437",
     categories: ["business", "productivity"],
     icons: [
-      // Working defaults — dynamic gold "CT" wordmark via next/og.
+      // Real company logo — preferred.
+      { src: "/brand/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/brand/icon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      // Dynamic fallbacks (next/og) — generated on the fly, always available.
       { src: "/icons/192", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/384", sizes: "384x384", type: "image/png", purpose: "any" },
       { src: "/icons/512", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/512", sizes: "512x512", type: "image/png", purpose: "maskable" },
-      // Once you save the real company icon at public/brand/icon.png, move
-      // these entries to the top (they become preferred). 404 today, so we
-      // keep them last to avoid noise.
-      // { src: "/brand/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      // { src: "/brand/icon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       { name: "New intake", short_name: "Intake", url: "/intake/new" },

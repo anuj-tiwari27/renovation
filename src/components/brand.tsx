@@ -11,8 +11,8 @@ import { env } from "@/lib/env";
  *  3. Flip these two constants from `.svg` to `.png`.
  *  4. Bump `CACHE_VERSION` in `public/sw.js` so installed PWAs refresh.
  */
-const ICON_SRC = "/brand/icon.svg";
-const LOGO_SRC = "/brand/logo.svg";
+const ICON_SRC = "/brand/icon.png";
+const LOGO_SRC = "/brand/logo.png";
 
 export function BrandMark({
   size = 28,
