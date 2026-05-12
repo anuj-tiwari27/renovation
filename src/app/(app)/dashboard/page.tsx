@@ -62,16 +62,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Snapshot of your remodeling business.
-          </p>
-        </div>
-        <Button asChild className="self-start sm:self-auto">
-          <Link href="/intake/new">Start an intake</Link>
-        </Button>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Dashboard</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Snapshot of your remodeling business.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -168,12 +163,9 @@ function EmptyState() {
       <h3 className="text-base font-medium">No projects yet</h3>
       <p className="mt-1 text-sm text-muted-foreground">
         {configured()
-          ? "Start your first discovery to populate the dashboard."
+          ? "Use the + button in the top bar to start your first discovery."
           : "Configure Supabase env vars and run the migration to see real data."}
       </p>
-      <Button asChild className="mt-4">
-        <Link href="/intake/new">Start an intake</Link>
-      </Button>
     </div>
   );
 }

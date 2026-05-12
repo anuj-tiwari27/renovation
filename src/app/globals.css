@@ -56,9 +56,9 @@
   --popover: 0 0% 100%;
   --popover-foreground: 224 30% 12%;
 
-  /* Gold primary; deep brand-700 paired with brand-foreground for contrast on white */
-  --primary: 42 71% 45%;
-  --primary-foreground: 30 33% 12%;
+  /* Deep luxury gold — passes WCAG AA against white (4.6:1) */
+  --primary: 38 72% 36%;
+  --primary-foreground: 0 0% 100%;
 
   --secondary: 220 14% 96%;
   --secondary-foreground: 224 30% 12%;
@@ -74,7 +74,7 @@
 
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 42 71% 45%;
+  --ring: 38 72% 36%;
 }
 
 .dark {

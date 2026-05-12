@@ -267,15 +267,17 @@ function StepIndicator({
                   type="button"
                   onClick={() => onJump(i)}
                   aria-current={active ? "step" : undefined}
+                  aria-label={`Step ${i + 1}: ${p.set.name}`}
                   className={cn(
-                    "grid h-8 w-8 place-items-center rounded-full border-2 text-xs font-semibold transition-colors",
+                    // explicit size + aspect-square keeps the dot perfectly circular even when content shifts
+                    "inline-flex aspect-square h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold leading-none transition-colors",
                     active && "border-primary bg-primary text-primary-foreground shadow-sm",
                     !active && done && "border-emerald-500 bg-emerald-500 text-white",
                     !active && !done && past && "border-primary bg-background text-primary",
                     !active && !done && !past && "border-border bg-background text-muted-foreground",
                   )}
                 >
-                  {done && !active ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                  {done && !active ? <CheckCircle2 className="h-4 w-4" /> : <span>{i + 1}</span>}
                 </button>
                 <button
                   type="button"
@@ -295,7 +297,7 @@ function StepIndicator({
                 <div
                   aria-hidden
                   className={cn(
-                    "mt-4 h-0.5 flex-1 min-w-[24px] rounded-full transition-colors",
+                    "mt-[18px] h-0.5 flex-1 min-w-[24px] rounded-full transition-colors",
                     lineFilled ? "bg-primary" : "bg-border",
                   )}
                 />

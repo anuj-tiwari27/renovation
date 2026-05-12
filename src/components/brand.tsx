@@ -5,11 +5,15 @@ import { cn } from "@/lib/utils";
 import { env } from "@/lib/env";
 
 /**
- * The brand mark — gold roof icon. Backed by /public/brand/icon.svg by default.
- *
- * To swap in your exact PNG: save it at `public/brand/icon.png` and change the
- * `src` below from `icon.svg` to `icon.png`.
+ * To use the actual company logo instead of the SVG fallback:
+ *  1. Save your icon PNG at `public/brand/icon.png` (recommended 512×512).
+ *  2. Save your wordmark PNG at `public/brand/logo.png`.
+ *  3. Flip these two constants from `.svg` to `.png`.
+ *  4. Bump `CACHE_VERSION` in `public/sw.js` so installed PWAs refresh.
  */
+const ICON_SRC = "/brand/icon.svg";
+const LOGO_SRC = "/brand/logo.svg";
+
 export function BrandMark({
   size = 28,
   className,
@@ -18,20 +22,16 @@ export function BrandMark({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/brand/icon.svg"
+      src={ICON_SRC}
       alt={`${env.NEXT_PUBLIC_APP_NAME} mark`}
       width={size}
       height={size}
-      className={cn("shrink-0 select-none", className)}
+      className={cn("shrink-0 select-none object-contain", className)}
       {...props}
     />
   );
 }
 
-/**
- * The full wordmark (icon + "CT ELITE REMODEL" text). Use this in hero spots,
- * not in tight nav rows.
- */
 export function BrandLogo({
   className,
   height = 56,
@@ -42,11 +42,11 @@ export function BrandLogo({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/brand/logo.svg"
+      src={LOGO_SRC}
       alt={env.NEXT_PUBLIC_APP_NAME}
       height={height}
       style={{ height }}
-      className={cn("w-auto select-none", className)}
+      className={cn("w-auto select-none object-contain", className)}
     />
   );
 }

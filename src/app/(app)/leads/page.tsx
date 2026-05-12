@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -37,16 +36,11 @@ export default async function LeadsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Leads</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Drag-free kanban — open a card to update status.
-          </p>
-        </div>
-        <Button asChild className="self-start sm:self-auto">
-          <Link href="/intake/new">New intake</Link>
-        </Button>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Leads</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Drag-free kanban — open a card to update status.
+        </p>
       </div>
 
       <div className="-mx-3 flex gap-3 overflow-x-auto px-3 pb-2 sm:-mx-0 sm:gap-4 sm:px-0">

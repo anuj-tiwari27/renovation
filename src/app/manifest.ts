@@ -1,6 +1,13 @@
 import type { MetadataRoute } from "next";
 import { env } from "@/lib/env";
 
+/**
+ * PWA manifest. Install icons point at /brand/icon.png — drop the real
+ * company logo at public/brand/icon.png (recommended 512×512 PNG) and
+ * Android/Chrome will pick it up on next install. While that file is
+ * missing the browser falls back to the dynamic /icons/[size] route
+ * (gold "CT" wordmark) so install never breaks.
+ */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: env.NEXT_PUBLIC_APP_NAME,
@@ -14,10 +21,16 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#c9a437",
     categories: ["business", "productivity"],
     icons: [
+      // Working defaults — dynamic gold "CT" wordmark via next/og.
       { src: "/icons/192", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/192", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/icons/384", sizes: "384x384", type: "image/png", purpose: "any" },
       { src: "/icons/512", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/icons/512", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      // Once you save the real company icon at public/brand/icon.png, move
+      // these entries to the top (they become preferred). 404 today, so we
+      // keep them last to avoid noise.
+      // { src: "/brand/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      // { src: "/brand/icon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       { name: "New intake", short_name: "Intake", url: "/intake/new" },
