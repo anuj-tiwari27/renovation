@@ -51,7 +51,22 @@ export function NewIntakeForm() {
     else if (type === "full_home") setRooms(["kitchen", "primary_bath", "living_room"]);
   }, [type]);
 
+  const titleTrim = title.trim();
+  const clientTrim = clientName.trim();
+  const errors = {
+    title: titleTrim.length < 2,
+    client: clientTrim.length < 2,
+    rooms: rooms.length === 0,
+  };
+  const hasErrors = errors.title || errors.client || errors.rooms;
+  const [showErrors, setShowErrors] = React.useState(false);
+
   const start = async () => {
+    if (hasErrors) {
+      setShowErrors(true);
+      toast.warning("Please fill in the required fields highlighted in red.");
+      return;
+    }
     setPending(true);
     try {
       let projectId = `new:${crypto.randomUUID()}`;
@@ -61,7 +76,7 @@ export function NewIntakeForm() {
         // Create client + project
         const { data: client, error: cErr } = await supa
           .from("clients")
-          .insert({ full_name: clientName || "Untitled client", owner_id: user?.id ?? null })
+          .insert({ full_name: clientTrim, owner_id: user?.id ?? null })
           .select("id")
           .single();
         if (cErr) throw cErr;
@@ -69,7 +84,7 @@ export function NewIntakeForm() {
           .from("projects")
           .insert({
             client_id: client.id,
-            title: title || `${TYPES.find((t) => t.value === type)?.label} project`,
+            title: titleTrim,
             type,
             status: "new_lead",
             rooms,
@@ -98,7 +113,9 @@ export function NewIntakeForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Project type</CardTitle>
+          <CardTitle>
+            Project type <span className="text-destructive">*</span>
+          </CardTitle>
           <CardDescription>What are we remodeling?</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,12 +144,17 @@ export function NewIntakeForm() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className={cn(showErrors && errors.rooms && "border-destructive")}>
         <CardHeader>
-          <CardTitle>Rooms in scope</CardTitle>
-          <CardDescription>Pick the rooms you'll discuss. You can add more later.</CardDescription>
+          <CardTitle>
+            Rooms in scope <span className="text-destructive">*</span>
+          </CardTitle>
+          <CardDescription>Pick at least one room. You can add more later.</CardDescription>
         </CardHeader>
         <CardContent>
+          {showErrors && errors.rooms && (
+            <p className="mb-3 text-xs text-destructive">Select at least one room.</p>
+          )}
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {ROOMS.map((r) => {
               const checked = rooms.includes(r.value);
@@ -161,16 +183,40 @@ export function NewIntakeForm() {
       <Card>
         <CardHeader>
           <CardTitle>Quick details</CardTitle>
-          <CardDescription>You can fill in everything else inside the wizard.</CardDescription>
+          <CardDescription>Fill these now — the rest comes inside the wizard.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="title">Project title</Label>
-            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Patel — Kitchen remodel" />
+            <Label htmlFor="title">
+              Project title <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Patel — Kitchen remodel"
+              aria-invalid={showErrors && errors.title}
+              className={cn(showErrors && errors.title && "border-destructive ring-1 ring-destructive")}
+            />
+            {showErrors && errors.title && (
+              <p className="text-xs text-destructive">Give the project a short title (e.g. surname + room).</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="client">Client name</Label>
-            <Input id="client" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Avery Patel" />
+            <Label htmlFor="client">
+              Client name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="client"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+              placeholder="Avery Patel"
+              aria-invalid={showErrors && errors.client}
+              className={cn(showErrors && errors.client && "border-destructive ring-1 ring-destructive")}
+            />
+            {showErrors && errors.client && (
+              <p className="text-xs text-destructive">Add the homeowner's name.</p>
+            )}
           </div>
         </CardContent>
       </Card>

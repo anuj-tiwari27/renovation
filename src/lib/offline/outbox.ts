@@ -63,6 +63,12 @@ export async function flush(): Promise<{ ok: number; failed: number }> {
           if (error) throw error;
           break;
         }
+        case "room.update": {
+          const p = row.payload as { id: string; patch: Record<string, unknown> };
+          const { error } = await supa.from("rooms").update(p.patch).eq("id", p.id);
+          if (error) throw error;
+          break;
+        }
         case "note.create": {
           const p = row.payload as { project_id: string; body: string };
           const { error } = await supa.from("notes").insert(p);

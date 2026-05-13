@@ -72,12 +72,20 @@ export default async function EstimatePage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Estimate</h1>
-          <p className="text-muted-foreground">{p.title}</p>
+      <div>
+        <Link
+          href={`/projects/${projectId}`}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back to project: {p.title}
+        </Link>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Estimate</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">{p.title}</p>
+          </div>
+          <Badge variant="secondary" className="capitalize">{e.status}</Badge>
         </div>
-        <Badge variant="secondary" className="capitalize">{e.status}</Badge>
       </div>
 
       <Card>

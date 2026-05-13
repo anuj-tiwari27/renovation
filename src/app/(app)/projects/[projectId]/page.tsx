@@ -49,6 +49,25 @@ export default async function ProjectDetailPage({ params }: Props) {
     .order("created_at", { ascending: false })
     .limit(20);
 
+  // Recent media (up to 6) with signed URLs for thumbnails
+  const { data: mediaRows } = await supa
+    .from("media")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false })
+    .limit(6);
+  const mediaList = (mediaRows as Array<{ id: string; storage_path: string; kind: string; mime_type: string | null }> | null) ?? [];
+  const thumbs: { id: string; url: string; kind: string; mime: string | null }[] = [];
+  if (mediaList.length > 0) {
+    const { data: signed } = await supa.storage
+      .from("project-media")
+      .createSignedUrls(mediaList.map((m) => m.storage_path), 60 * 60);
+    const urlByPath = Object.fromEntries((signed ?? []).map((s) => [s.path ?? "", s.signedUrl]));
+    for (const m of mediaList) {
+      thumbs.push({ id: m.id, url: urlByPath[m.storage_path] ?? "", kind: m.kind, mime: m.mime_type });
+    }
+  }
+
   const intakeHref = `/intake/${p.id}?type=${p.type}&rooms=${encodeURIComponent(p.rooms.join(","))}`;
 
   return (
@@ -214,6 +233,42 @@ export default async function ProjectDetailPage({ params }: Props) {
           <QuickAction href={`/projects/${p.id}/estimate`} icon={FileText} label="Build estimate" />
         </CardContent>
       </Card>
+
+      {/* Media gallery */}
+      {thumbs.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base">Recent media</CardTitle>
+            <Link
+              href={`/projects/${p.id}/media`}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              See all →
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {thumbs.map((m) => {
+                const isImage = m.kind === "photo" || m.kind === "inspiration" || m.mime?.startsWith("image/");
+                return (
+                  <li key={m.id} className="aspect-square overflow-hidden rounded-md border bg-muted">
+                    <a href={m.url} target="_blank" rel="noreferrer" className="block h-full w-full">
+                      {isImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center text-[10px] uppercase tracking-wide text-muted-foreground">
+                          {m.kind}
+                        </div>
+                      )}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3">

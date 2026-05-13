@@ -22,11 +22,22 @@ interface WizardProps {
   projectId: string; // may be `new:<uuid>` if not yet persisted
   projectType: ProjectType;
   selectedRooms: string[];
+  /** Client row id linked to the project — required for `bind: clients` to sync. */
+  clientId?: string | null;
+  /** Map of room kind → room.id, used for `bind: rooms` writes per step. */
+  roomIdByKind?: Record<string, string>;
   /** Optional: hydrate from server-loaded answers (when editing) */
   initialAnswers?: Record<string, Answers>;
 }
 
-export function IntakeWizard({ projectId, projectType, selectedRooms, initialAnswers }: WizardProps) {
+export function IntakeWizard({
+  projectId,
+  projectType,
+  selectedRooms,
+  clientId,
+  roomIdByKind,
+  initialAnswers,
+}: WizardProps) {
   const router = useRouter();
   const plan = React.useMemo(
     () => planForProject(projectType, selectedRooms),
@@ -61,13 +72,39 @@ export function IntakeWizard({ projectId, projectType, selectedRooms, initialAns
   const setAnswer = (qid: string, value: unknown) => {
     if (!set) return;
     patchDraft(key, { [qid]: value });
-    void enqueue("answer.upsert", {
-      project_id: projectId.startsWith("new:") ? null : projectId,
-      room_id: null, // resolved server-side after room is created
-      question_set_slug: set.slug,
-      question_id: qid,
-      value,
-    });
+
+    const persistedProject = !projectId.startsWith("new:");
+    const roomKind = current?.roomKind ?? null;
+    const roomId = roomKind && roomIdByKind ? roomIdByKind[roomKind] ?? null : null;
+
+    // Always store the answer in the universal `answers` table.
+    if (persistedProject) {
+      void enqueue("answer.upsert", {
+        project_id: projectId,
+        room_id: roomId,
+        question_set_slug: set.slug,
+        question_id: qid,
+        value,
+      });
+    }
+
+    // Also sync to the canonical column if the field declares a `bind`.
+    // This is what makes the project detail page (Client / Budget / Timeline /
+    // Design preferences cards) actually show the values the user typed,
+    // and what lets the AI summary read from real columns.
+    const field = set.sections
+      .flatMap((s) => s.fields)
+      .find((f) => f.id === qid);
+    if (!field?.bind || !persistedProject) return;
+
+    const patch = { [field.bind.column]: value } as Record<string, unknown>;
+    if (field.bind.table === "projects") {
+      void enqueue("project.update", { id: projectId, patch });
+    } else if (field.bind.table === "clients" && clientId) {
+      void enqueue("client.update", { id: clientId, patch });
+    } else if (field.bind.table === "rooms" && roomId) {
+      void enqueue("room.update", { id: roomId, patch });
+    }
   };
 
   // Review mode — shown when the user clicks "Review answers" at the end OR

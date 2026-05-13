@@ -48,18 +48,26 @@ export default async function SummaryPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Sparkles className="h-3 w-3" /> Generated summary
+      <div>
+        <Link
+          href={`/projects/${projectId}`}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back to project: {p.title}
+        </Link>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+              <Sparkles className="h-3 w-3" /> Generated summary
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{p.title}</h1>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">{p.title}</h1>
+          <Button asChild className="self-start sm:self-auto">
+            <Link href={`/api/pdf/${projectId}`} target="_blank">
+              <FileDown className="h-4 w-4" /> Download PDF
+            </Link>
+          </Button>
         </div>
-        <Button asChild>
-          <Link href={`/api/pdf/${projectId}`} target="_blank">
-            <FileDown className="h-4 w-4" /> Download PDF
-          </Link>
-        </Button>
       </div>
 
       <Card>

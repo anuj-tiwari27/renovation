@@ -12,6 +12,7 @@ export interface OutboxRow {
     | "answer.upsert"
     | "project.update"
     | "client.update"
+    | "room.update"
     | "media.upload"
     | "note.create"
     | "activity.create";

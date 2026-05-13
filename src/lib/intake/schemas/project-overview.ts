@@ -7,42 +7,10 @@ export const projectOverviewSet: QuestionSet = {
   appliesTo: ["kitchen", "bathroom", "full_home", "multi_room", "commercial"],
   sections: [
     {
-      id: "scope",
-      title: "Scope & timing",
+      id: "timing",
+      title: "Timing",
+      description: "Project type and rooms were captured at intake — review them on the project detail page.",
       fields: [
-        {
-          id: "type",
-          kind: "image_cards",
-          label: "Project type",
-          required: true,
-          options: [
-            { value: "kitchen", label: "Kitchen" },
-            { value: "bathroom", label: "Bathroom" },
-            { value: "full_home", label: "Full home" },
-            { value: "multi_room", label: "Multi-room" },
-            { value: "commercial", label: "Commercial" },
-          ],
-          bind: { table: "projects", column: "type" },
-        },
-        {
-          id: "rooms",
-          kind: "multiselect",
-          label: "Rooms involved",
-          options: [
-            { value: "kitchen", label: "Kitchen" },
-            { value: "primary_bath", label: "Primary bath" },
-            { value: "guest_bath", label: "Guest bath" },
-            { value: "powder", label: "Powder room" },
-            { value: "living_room", label: "Living room" },
-            { value: "dining_room", label: "Dining room" },
-            { value: "primary_bedroom", label: "Primary bedroom" },
-            { value: "office", label: "Office / WFH" },
-            { value: "laundry", label: "Laundry / mudroom" },
-            { value: "basement", label: "Basement" },
-            { value: "exterior", label: "Exterior" },
-          ],
-          bind: { table: "projects", column: "rooms" },
-        },
         { id: "desired_completion", kind: "date", label: "Desired completion date", bind: { table: "projects", column: "desired_completion" } },
         {
           id: "start_flexibility",
