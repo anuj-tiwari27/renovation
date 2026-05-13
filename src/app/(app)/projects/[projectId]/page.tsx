@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -101,6 +102,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 Continue intake <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            <DeleteProjectButton projectId={p.id} projectTitle={p.title} />
           </div>
         </div>
       </div>

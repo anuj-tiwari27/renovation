@@ -158,8 +158,14 @@ export interface Estimate {
   status: EstimateStatus;
   subtotal: number;
   tax_rate: number;
+  discount_percent: number;
   total: number;
   notes: string | null;
+  terms: string | null;
+  bill_to_name: string | null;
+  bill_to_email: string | null;
+  bill_to_phone: string | null;
+  bill_to_address: string | null;
   sent_at: string | null;
   accepted_at: string | null;
   pdf_path: string | null;
