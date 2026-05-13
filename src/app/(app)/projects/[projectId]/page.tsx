@@ -9,6 +9,8 @@ import {
   Phone,
   Mail,
   MapPin,
+  Signature,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,14 +62,27 @@ export default async function ProjectDetailPage({ params }: Props) {
   const mediaList = (mediaRows as Array<{ id: string; storage_path: string; kind: string; mime_type: string | null }> | null) ?? [];
   const thumbs: { id: string; url: string; kind: string; mime: string | null }[] = [];
   if (mediaList.length > 0) {
-    const { data: signed } = await supa.storage
+    const { data: signedUrls } = await supa.storage
       .from("project-media")
       .createSignedUrls(mediaList.map((m) => m.storage_path), 60 * 60);
-    const urlByPath = Object.fromEntries((signed ?? []).map((s) => [s.path ?? "", s.signedUrl]));
+    const urlByPath = Object.fromEntries((signedUrls ?? []).map((s) => [s.path ?? "", s.signedUrl]));
     for (const m of mediaList) {
       thumbs.push({ id: m.id, url: urlByPath[m.storage_path] ?? "", kind: m.kind, mime: m.mime_type });
     }
   }
+
+  // Has the homeowner signed off on the requirements?
+  const { data: latestSig } = await supa
+    .from("signatures")
+    .select("signer_name, signed_at")
+    .eq("project_id", projectId)
+    .is("estimate_id", null)
+    .order("signed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const requirementsSigned = latestSig as
+    | { signer_name: string; signed_at: string }
+    | null;
 
   const intakeHref = `/intake/${p.id}?type=${p.type}&rooms=${encodeURIComponent(p.rooms.join(","))}`;
 
@@ -223,15 +238,51 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Card>
       )}
 
+      {/* Requirements sign-off banner */}
+      {requirementsSigned ? (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm dark:border-emerald-900/40 dark:bg-emerald-950/30">
+          <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200">
+            <CheckCircle2 className="h-5 w-5" />
+            <div>
+              <div className="font-medium">Requirements confirmed</div>
+              <div className="text-xs">
+                Signed by {requirementsSigned.signer_name} on {formatDate(requirementsSigned.signed_at)}
+              </div>
+            </div>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link href={`/projects/${p.id}/confirm`}>View signature</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-start justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900/40 dark:bg-amber-950/30 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-2 text-amber-900 dark:text-amber-200">
+            <Signature className="mt-0.5 h-5 w-5" />
+            <div>
+              <div className="font-medium">Requirements not yet confirmed</div>
+              <div className="text-xs">
+                Capture the homeowner's signature so the project can move to estimating.
+              </div>
+            </div>
+          </div>
+          <Button asChild size="sm">
+            <Link href={`/projects/${p.id}/confirm`}>
+              <Signature className="h-4 w-4" /> Get signature
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {/* Quick actions */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Quick actions</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           <QuickAction href={intakeHref} icon={ClipboardList} label="View / edit answers" />
           <QuickAction href={`/projects/${p.id}/media`} icon={Camera} label="Upload media" />
           <QuickAction href={`/projects/${p.id}/summary`} icon={Sparkles} label="AI summary" />
+          <QuickAction href={`/projects/${p.id}/confirm`} icon={Signature} label="Confirm & sign" />
           <QuickAction href={`/projects/${p.id}/estimate`} icon={FileText} label="Build estimate" />
         </CardContent>
       </Card>
