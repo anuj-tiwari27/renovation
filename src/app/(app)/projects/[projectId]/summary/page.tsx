@@ -4,6 +4,7 @@ import { Sparkles, FileDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RegenerateSummaryButton } from "@/components/summary/regenerate-button";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { aiSummarize, buildLocalSummary } from "@/lib/ai/summarize";
@@ -62,11 +63,14 @@ export default async function SummaryPage({ params }: Props) {
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{p.title}</h1>
           </div>
-          <Button asChild className="self-start sm:self-auto">
-            <Link href={`/api/pdf/${projectId}`} target="_blank">
-              <FileDown className="h-4 w-4" /> Download PDF
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+            <RegenerateSummaryButton />
+            <Button asChild>
+              <Link href={`/api/pdf/${projectId}`} target="_blank">
+                <FileDown className="h-4 w-4" /> Download PDF
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 

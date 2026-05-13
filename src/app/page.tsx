@@ -76,7 +76,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} {env.NEXT_PUBLIC_COMPANY_NAME}
+        © {new Date().getUTCFullYear()} {env.NEXT_PUBLIC_COMPANY_NAME}
       </footer>
     </main>
   );

@@ -51,15 +51,23 @@ export function IntakeWizard({
     [projectType, selectedRooms],
   );
   const { drafts, patchDraft, setDraft, lastStep, setLastStep } = useIntakeStore();
-  const [stepIdx, setStepIdx] = React.useState(lastStep[projectId] ?? 0);
+  // IMPORTANT: do NOT seed `stepIdx` from `lastStep` directly — Zustand persist
+  // hydrates from localStorage synchronously on the client (so useStore() may
+  // return populated data before the first render), but the SERVER snapshot
+  // saw an empty store. Seeding useState from that mismatched store fires
+  // React #418. Start at 0 everywhere; sync to the persisted lastStep in the
+  // mount effect below.
+  const [stepIdx, setStepIdx] = React.useState(0);
   const [saving, setSaving] = React.useState(false);
   const [reviewing, setReviewing] = React.useState(false);
-  // Zustand persist hydrates from localStorage AFTER the first render. To avoid
-  // React hydration mismatches (#418), we only trust persisted state once
-  // `mounted` is true. Server + first client render see the initial empty
-  // store; second client render uses the real drafts.
+  // After hydration we trust the persisted store. Same gate for the answers
+  // we read off `drafts` (see below).
   const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  React.useEffect(() => {
+    setMounted(true);
+    setStepIdx(lastStep[projectId] ?? 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   React.useEffect(() => {
     if (!initialAnswers) return;

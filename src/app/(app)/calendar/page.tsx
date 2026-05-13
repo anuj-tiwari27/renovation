@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { NewAppointmentDialog, type ProjectOption } from "@/components/appointments/new-appointment-dialog";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
+import { formatTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Calendar" };
@@ -89,15 +90,8 @@ export default async function CalendarPage() {
                     {items.map((a) => (
                       <li key={a.id} className="flex items-start gap-3 p-3 sm:p-4">
                         <div className="flex w-20 shrink-0 flex-col items-center rounded-md bg-muted/60 px-2 py-1 text-center">
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(a.starts_at).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            – {new Date(a.ends_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{formatTime(a.starts_at)}</div>
+                          <div className="text-[10px] text-muted-foreground">– {formatTime(a.ends_at)}</div>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
@@ -132,15 +126,16 @@ export default async function CalendarPage() {
 }
 
 function groupByDay(appts: Appt[]): [string, Appt[]][] {
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   const groups: Record<string, Appt[]> = {};
   for (const a of appts) {
-    const d = new Date(a.starts_at);
-    const key = d.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const key = fmt.format(new Date(a.starts_at));
     (groups[key] ||= []).push(a);
   }
   return Object.entries(groups);

@@ -76,6 +76,27 @@ export function missingRequired(set: QuestionSet, answers: Answers): Field[] {
 export function validateSet(set: QuestionSet, answers: Answers): string[] {
   const errors: string[] = [];
 
+  // Field-type format checks (run for every visible field on every step).
+  // RFC-5322-lite for email; we accept anything with 7+ digits for phone
+  // since formats vary internationally.
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  for (const section of visibleSections(set, answers)) {
+    for (const field of visibleFields(section, answers)) {
+      const v = answers[field.id];
+      if (v == null || v === "") continue;
+      if (field.kind === "email") {
+        if (!EMAIL_RE.test(String(v).trim())) {
+          errors.push(`${field.label}: enter a valid email address (name@example.com).`);
+        }
+      } else if (field.kind === "phone") {
+        const digits = String(v).replace(/\D/g, "");
+        if (digits.length < 7) {
+          errors.push(`${field.label}: enter a valid phone number (at least 7 digits).`);
+        }
+      }
+    }
+  }
+
   if (set.slug === "budget_v1") {
     const min = numOrNull(answers["budget_min"]);
     const ideal = numOrNull(answers["budget_ideal"]);
