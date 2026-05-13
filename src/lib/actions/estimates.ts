@@ -116,26 +116,41 @@ export async function deleteScopeItemAction(itemId: string) {
   return { ok: true };
 }
 
-export async function syncBillToFromClientAction(estimateId: string) {
+export interface BillToValues {
+  bill_to_name: string | null;
+  bill_to_email: string | null;
+  bill_to_phone: string | null;
+  bill_to_address: string | null;
+}
+
+export async function syncBillToFromClientAction(
+  estimateId: string,
+): Promise<{ ok: boolean; values: BillToValues | null; reason?: string }> {
   const supa = await createClient();
-  const { data: est } = await supa
+  const { data: est, error: estErr } = await supa
     .from("estimates")
     .select("project_id")
     .eq("id", estimateId)
     .maybeSingle();
-  if (!est) return { ok: false };
-  const { data: project } = await supa
+  if (estErr) throw new Error(`estimate lookup: ${estErr.message}`);
+  if (!est) return { ok: false, values: null, reason: "Estimate not found" };
+
+  const { data: project, error: projErr } = await supa
     .from("projects")
     .select("client_id")
     .eq("id", (est as { project_id: string }).project_id)
     .maybeSingle();
-  if (!project) return { ok: false };
-  const { data: client } = await supa
+  if (projErr) throw new Error(`project lookup: ${projErr.message}`);
+  if (!project) return { ok: false, values: null, reason: "Project not found" };
+
+  const { data: client, error: cliErr } = await supa
     .from("clients")
     .select("full_name, email, phone, address_street, address_city, address_state, address_zip")
     .eq("id", (project as { client_id: string }).client_id)
     .maybeSingle();
-  if (!client) return { ok: false };
+  if (cliErr) throw new Error(`client lookup: ${cliErr.message}`);
+  if (!client) return { ok: false, values: null, reason: "Linked client not found" };
+
   const c = client as {
     full_name: string;
     email: string | null;
@@ -145,19 +160,21 @@ export async function syncBillToFromClientAction(estimateId: string) {
     address_state: string | null;
     address_zip: string | null;
   };
-  const addr = [c.address_street, [c.address_city, c.address_state, c.address_zip].filter(Boolean).join(", ")]
-    .filter(Boolean)
-    .join("\n");
-  await supa
-    .from("estimates")
-    .update({
-      bill_to_name: c.full_name,
-      bill_to_email: c.email,
-      bill_to_phone: c.phone,
-      bill_to_address: addr || null,
-    })
-    .eq("id", estimateId);
-  return { ok: true };
+  const addr =
+    [c.address_street, [c.address_city, c.address_state, c.address_zip].filter(Boolean).join(", ")]
+      .filter(Boolean)
+      .join("\n") || null;
+
+  const values: BillToValues = {
+    bill_to_name: c.full_name,
+    bill_to_email: c.email,
+    bill_to_phone: c.phone,
+    bill_to_address: addr,
+  };
+
+  const { error: upErr } = await supa.from("estimates").update(values).eq("id", estimateId);
+  if (upErr) throw new Error(`update bill_to: ${upErr.message}`);
+  return { ok: true, values };
 }
 
 export async function updateEstimateStatusAction(

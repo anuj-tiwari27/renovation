@@ -91,14 +91,19 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
   // ---------- mutations ----------
   const addRow = () => {
     startTransition(async () => {
-      const row = await addScopeItemAction(estimate.id, {
-        category: "Labor",
-        description: "New line item",
-        qty: 1,
-        unit: "ea",
-        unit_price: 0,
-      });
-      setItems((curr) => [...curr, row].sort((a, b) => a.position - b.position));
+      try {
+        const row = await addScopeItemAction(estimate.id, {
+          category: "Labor",
+          description: "New line item",
+          qty: 1,
+          unit: "ea",
+          unit_price: 0,
+        });
+        setItems((curr) => [...curr, row].sort((a, b) => a.position - b.position));
+        toast.success("Line added");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not add line item");
+      }
     });
   };
 
@@ -110,54 +115,82 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
     const row = items.find((r) => r.id === id);
     if (!row) return;
     startTransition(async () => {
-      await updateScopeItemAction(id, {
-        category: row.category,
-        description: row.description,
-        qty: Number(row.qty),
-        unit: row.unit,
-        unit_price: Number(row.unit_price),
-        is_optional: row.is_optional,
-      });
+      try {
+        await updateScopeItemAction(id, {
+          category: row.category,
+          description: row.description,
+          qty: Number(row.qty),
+          unit: row.unit,
+          unit_price: Number(row.unit_price),
+          is_optional: row.is_optional,
+        });
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not save line item");
+      }
     });
   };
 
   const removeRow = (id: string) => {
     if (!confirm("Remove this line item?")) return;
     startTransition(async () => {
-      await deleteScopeItemAction(id);
-      setItems((curr) => curr.filter((r) => r.id !== id));
+      try {
+        await deleteScopeItemAction(id);
+        setItems((curr) => curr.filter((r) => r.id !== id));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not delete line item");
+      }
     });
   };
 
   const saveHeader = () => {
     startTransition(async () => {
-      await updateEstimateAction(estimate.id, {
-        tax_rate: Number(draft.tax_rate),
-        discount_percent: Number(draft.discount_percent),
-        notes: draft.notes ?? null,
-        terms: draft.terms ?? null,
-        bill_to_name: draft.bill_to_name ?? null,
-        bill_to_email: draft.bill_to_email ?? null,
-        bill_to_phone: draft.bill_to_phone ?? null,
-        bill_to_address: draft.bill_to_address ?? null,
-      });
-      toast.success("Saved");
+      try {
+        await updateEstimateAction(estimate.id, {
+          tax_rate: Number(draft.tax_rate),
+          discount_percent: Number(draft.discount_percent),
+          notes: draft.notes ?? null,
+          terms: draft.terms ?? null,
+          bill_to_name: draft.bill_to_name ?? null,
+          bill_to_email: draft.bill_to_email ?? null,
+          bill_to_phone: draft.bill_to_phone ?? null,
+          bill_to_address: draft.bill_to_address ?? null,
+        });
+        toast.success("Saved");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not save estimate");
+      }
     });
   };
 
   const importCustomer = () => {
     startTransition(async () => {
-      await syncBillToFromClientAction(estimate.id);
-      router.refresh();
-      toast.success("Imported customer details");
+      try {
+        const res = await syncBillToFromClientAction(estimate.id);
+        if (!res.ok || !res.values) {
+          toast.warning(res.reason ?? "Nothing to import — no linked client found");
+          return;
+        }
+        // Reflect immediately in the inputs without waiting for a router refresh.
+        setDraft((d) => ({ ...d, ...res.values! }));
+        router.refresh();
+        toast.success("Imported customer details");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not import customer details");
+      }
     });
   };
 
   const changeStatus = (next: EstimateStatus) => {
+    const prev = status;
     setStatus(next);
     startTransition(async () => {
-      await updateEstimateStatusAction(estimate.id, next);
-      toast.success(`Marked as ${next}`);
+      try {
+        await updateEstimateStatusAction(estimate.id, next);
+        toast.success(`Marked as ${next}`);
+      } catch (e) {
+        setStatus(prev);
+        toast.error(e instanceof Error ? e.message : "Could not change status");
+      }
     });
   };
 

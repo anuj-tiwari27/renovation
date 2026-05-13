@@ -40,7 +40,9 @@ export function SignaturePad({
   const [agreed, setAgreed] = React.useState(false);
   const [empty, setEmpty] = React.useState(true);
 
-  // Resize the canvas to fit its container — required by signature_pad.
+  // Resize the canvas to fit its container — required by signature_pad — and
+  // restore the existing stroke data after a resize so the signature doesn't
+  // disappear when the user rotates / soft-keyboard slides up.
   React.useEffect(() => {
     const wrap = wrapRef.current;
     const pad = padRef.current;
@@ -49,7 +51,8 @@ export function SignaturePad({
       const canvas = pad.getCanvas();
       const ratio = Math.max(window.devicePixelRatio || 1, 1);
       const { width } = wrap.getBoundingClientRect();
-      const height = 200;
+      const height = 240;
+      const prev = pad.toData();
       canvas.width = width * ratio;
       canvas.height = height * ratio;
       canvas.style.width = `${width}px`;
@@ -57,6 +60,9 @@ export function SignaturePad({
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(ratio, ratio);
       pad.clear();
+      // Stroke data uses absolute pixel coords, so this only restores
+      // cleanly within the same DPR. Good enough for orientation changes.
+      pad.fromData(prev);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -154,10 +160,23 @@ export function SignaturePad({
               padRef.current = r;
             }}
             penColor="#0b0b0b"
+            // Smoother strokes: tuned per signature_pad's docs.
+            // - velocityFilterWeight: heavier smoothing of velocity changes
+            //   so a steady drag stays a steady width
+            // - minWidth/maxWidth: actual pen-like taper on the up/down
+            // - throttle: reduces points (cheaper, less jitter)
+            // - minDistance: ignore micro-tremors below 1px
+            // - dotSize: stable dot when the user taps without moving
+            velocityFilterWeight={0.7}
+            minWidth={0.8}
+            maxWidth={2.6}
+            throttle={16}
+            minDistance={1}
+            dotSize={1.4}
             onEnd={onEnd}
             canvasProps={{
               className: "block w-full rounded-lg touch-none",
-              style: { height: 200 },
+              style: { height: 240 },
             }}
           />
           {empty && (

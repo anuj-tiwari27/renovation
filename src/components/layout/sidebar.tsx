@@ -25,7 +25,7 @@ const nav = [
   { href: "/estimates", label: "Estimates", icon: FileText },
   { href: "/inspiration", label: "Inspiration", icon: ImageIcon },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function SidebarNav({ closable = false }: { closable?: boolean }) {
