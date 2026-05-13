@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { MediaDropzone } from "@/components/media/dropzone";
+import { Thumbnail } from "@/components/media/thumbnail";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
@@ -94,8 +95,13 @@ export default async function MediaPage({ params }: Props) {
                     >
                       <div className="relative aspect-square bg-muted">
                         {isImage ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={url} alt={m.caption ?? m.storage_path} className="h-full w-full object-cover" loading="lazy" />
+                          <Thumbnail
+                            src={url}
+                            alt={m.caption ?? m.storage_path}
+                            loading="lazy"
+                            fallbackLabel={m.kind}
+                            className="h-full w-full object-cover"
+                          />
                         ) : isVideo ? (
                           <video src={url} className="h-full w-full object-cover" />
                         ) : (

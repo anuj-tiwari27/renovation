@@ -10,7 +10,14 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { FieldRenderer } from "./field-renderer";
 import { ReviewAnswers } from "./review-answers";
-import { evaluate, missingRequired, progressOf, visibleFields, visibleSections } from "@/lib/intake/logic";
+import {
+  evaluate,
+  missingRequired,
+  progressOf,
+  validateSet,
+  visibleFields,
+  visibleSections,
+} from "@/lib/intake/logic";
 import { planForProject } from "@/lib/intake/schemas";
 import type { Answers, QuestionSet } from "@/lib/intake/types";
 import { useIntakeStore, draftKey } from "@/store/intake-store";
@@ -47,6 +54,12 @@ export function IntakeWizard({
   const [stepIdx, setStepIdx] = React.useState(lastStep[projectId] ?? 0);
   const [saving, setSaving] = React.useState(false);
   const [reviewing, setReviewing] = React.useState(false);
+  // Zustand persist hydrates from localStorage AFTER the first render. To avoid
+  // React hydration mismatches (#418), we only trust persisted state once
+  // `mounted` is true. Server + first client render see the initial empty
+  // store; second client render uses the real drafts.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
 
   React.useEffect(() => {
     if (!initialAnswers) return;
@@ -67,7 +80,24 @@ export function IntakeWizard({
   const current = plan[stepIdx];
   const set: QuestionSet | undefined = current?.set;
   const key = set ? draftKey(projectId, set.slug, current.roomKind ?? null) : "";
-  const answers: Answers = (key && drafts[key]) || {};
+  // Only read persisted drafts after mount — otherwise the first client
+  // render uses the SSR-rendered empty store and the second uses localStorage,
+  // which fires React error #418.
+  const answers: Answers = (mounted && key && drafts[key]) || {};
+
+  // Per-step progress + cross-field validation. Computed unconditionally
+  // (hooks must run in the same order on every render) but gracefully
+  // returns zeros / no-errors when there's no current set.
+  const { answered, total } = React.useMemo(
+    () => (set ? progressOf(set, answers) : { answered: 0, total: 0 }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [stepIdx, key, set, answers],
+  );
+  const validationErrors = React.useMemo(
+    () => (set ? validateSet(set, answers) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [stepIdx, key, set, answers],
+  );
 
   const setAnswer = (qid: string, value: unknown) => {
     if (!set) return;
@@ -153,7 +183,6 @@ export function IntakeWizard({
   }
 
   const sections = visibleSections(set, answers);
-  const { answered, total } = progressOf(set, answers);
   const pct = total ? Math.round((answered / total) * 100) : 0;
 
   const scrollToTop = () => {
@@ -164,6 +193,10 @@ export function IntakeWizard({
     const missing = missingRequired(set, answers);
     if (missing.length) {
       toast.warning(`${missing.length} required field${missing.length === 1 ? "" : "s"} missing`);
+      return;
+    }
+    if (validationErrors.length) {
+      toast.warning(validationErrors[0]);
       return;
     }
     setSaving(true);
@@ -247,6 +280,16 @@ export function IntakeWizard({
           })}
 
           <MissingHint set={set} answers={answers} />
+          {validationErrors.length > 0 && (
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <ul className="space-y-0.5">
+                {validationErrors.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </CardContent>
       </Card>
 

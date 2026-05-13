@@ -72,10 +72,16 @@ export default async function IntakePage({ params, searchParams }: Props) {
       // up before the bound-field sync shipped).
       const p = project as Project;
       const c = clientRow as Client | null;
+      // Boolean columns in our schema default to `false`. If we seed those
+      // false values into the wizard, every Yes/No toggle on a fresh project
+      // renders pre-selected "No" — which both biases analytics and looks
+      // inconsistent with unbound booleans (which render unanswered). Keep
+      // them out of the seed; users explicitly answer in the wizard.
       const seed = (slug: string, roomKind: string | null, kv: Record<string, unknown>) => {
         const key = `${slug}::${roomKind ?? "_"}`;
         const next = { ...(grouped[key] ?? {}) };
         for (const [k, v] of Object.entries(kv)) {
+          if (typeof v === "boolean") continue; // never seed booleans
           if (next[k] == null && v != null && v !== "") next[k] = v;
         }
         grouped[key] = next;

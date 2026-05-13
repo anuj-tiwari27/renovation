@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Thumbnail } from "@/components/media/thumbnail";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -282,7 +283,11 @@ export default async function ProjectDetailPage({ params }: Props) {
           <QuickAction href={intakeHref} icon={ClipboardList} label="View / edit answers" />
           <QuickAction href={`/projects/${p.id}/media`} icon={Camera} label="Upload media" />
           <QuickAction href={`/projects/${p.id}/summary`} icon={Sparkles} label="AI summary" />
-          <QuickAction href={`/projects/${p.id}/confirm`} icon={Signature} label="Confirm & sign" />
+          <QuickAction
+            href={`/projects/${p.id}/confirm`}
+            icon={Signature}
+            label={requirementsSigned ? "View signature" : "Confirm & sign"}
+          />
           <QuickAction href={`/projects/${p.id}/estimate`} icon={FileText} label="Build estimate" />
         </CardContent>
       </Card>
@@ -307,8 +312,13 @@ export default async function ProjectDetailPage({ params }: Props) {
                   <li key={m.id} className="aspect-square overflow-hidden rounded-md border bg-muted">
                     <a href={m.url} target="_blank" rel="noreferrer" className="block h-full w-full">
                       {isImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        <Thumbnail
+                          src={m.url}
+                          alt=""
+                          loading="lazy"
+                          fallbackLabel={m.kind}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-[10px] uppercase tracking-wide text-muted-foreground">
                           {m.kind}

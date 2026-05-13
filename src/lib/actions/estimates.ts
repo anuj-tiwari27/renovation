@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Estimate, ScopeItem, EstimateStatus } from "@/lib/supabase/database.types";
 
+// ---------- guards ----------
+// Clamp a number into [min, max]; reject NaN/-Infinity/Infinity by returning min.
+function clamp(n: unknown, min: number, max: number): number {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return min;
+  return Math.min(max, Math.max(min, v));
+}
+
 export interface EstimatePatch {
   status?: EstimateStatus;
   tax_rate?: number;
@@ -17,8 +25,15 @@ export interface EstimatePatch {
 }
 
 export async function updateEstimateAction(estimateId: string, patch: EstimatePatch) {
+  // Clamp anything user-controlled before it touches the DB. tax_rate is a
+  // decimal (0.085 = 8.5%); discount_percent is 0-100.
+  const safe: EstimatePatch = { ...patch };
+  if (patch.tax_rate !== undefined) safe.tax_rate = clamp(patch.tax_rate, 0, 1);
+  if (patch.discount_percent !== undefined) {
+    safe.discount_percent = clamp(patch.discount_percent, 0, 100);
+  }
   const supa = await createClient();
-  const { error } = await supa.from("estimates").update(patch).eq("id", estimateId);
+  const { error } = await supa.from("estimates").update(safe).eq("id", estimateId);
   if (error) throw new Error(error.message);
   revalidatePath(`/projects`);
   return { ok: true };
@@ -54,9 +69,16 @@ export async function recomputeEstimateTotalsAction(estimateId: string) {
     if (est) taxRate = Number((est as { tax_rate: number | null }).tax_rate ?? 0);
   }
   const itemsTyped = (items as Array<{ total: number }> | null) ?? [];
-  const subtotal = itemsTyped.reduce((s, r) => s + Number(r.total ?? 0), 0);
-  const afterDiscount = subtotal * (1 - discountPct / 100);
-  const total = afterDiscount * (1 + taxRate);
+  // Floor every component at 0 — a refund-style negative estimate is a
+  // future feature, not something a stray negative line item should produce.
+  const subtotal = Math.max(
+    0,
+    itemsTyped.reduce((s, r) => s + Math.max(0, Number(r.total ?? 0)), 0),
+  );
+  const discountPctClamped = clamp(discountPct, 0, 100);
+  const taxRateClamped = clamp(taxRate, 0, 1);
+  const afterDiscount = subtotal * (1 - discountPctClamped / 100);
+  const total = Math.max(0, afterDiscount * (1 + taxRateClamped));
   const { error } = await supa
     .from("estimates")
     .update({ subtotal, total })
@@ -94,9 +116,11 @@ export async function addScopeItemAction(estimateId: string, item: ScopeItemInpu
       estimate_id: estimateId,
       category: item.category,
       description: item.description,
-      qty: item.qty ?? 1,
+      // Reject anything negative or non-finite — refund-style estimates aren't
+      // supported (use a discount instead).
+      qty: clamp(item.qty ?? 1, 0, 1_000_000),
       unit: item.unit ?? "ea",
-      unit_price: item.unit_price ?? 0,
+      unit_price: clamp(item.unit_price ?? 0, 0, 100_000_000),
       is_optional: item.is_optional ?? false,
       position: item.position ?? nextPos,
     })
@@ -111,10 +135,13 @@ export async function updateScopeItemAction(
   itemId: string,
   patch: Partial<ScopeItemInput>,
 ) {
+  const safe: Partial<ScopeItemInput> = { ...patch };
+  if (patch.qty !== undefined) safe.qty = clamp(patch.qty, 0, 1_000_000);
+  if (patch.unit_price !== undefined) safe.unit_price = clamp(patch.unit_price, 0, 100_000_000);
   const supa = await createClient();
   const { data: row, error } = await supa
     .from("scope_items")
-    .update(patch)
+    .update(safe)
     .eq("id", itemId)
     .select("estimate_id")
     .single();

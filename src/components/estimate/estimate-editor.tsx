@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BrandLogo } from "@/components/brand";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import type { Estimate, ScopeItem, EstimateStatus, Project } from "@/lib/supabase/database.types";
 import {
   addScopeItemAction,
@@ -81,11 +81,22 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
   };
 
   // ---------- totals ----------
-  const subtotal = items.reduce((s, r) => s + Number(r.qty ?? 0) * Number(r.unit_price ?? 0), 0);
-  const discountAmt = subtotal * (Number(draft.discount_percent ?? 0) / 100);
+  // Mirror the server-side clamping so the on-screen total can never diverge
+  // from what gets persisted. Each line is floored at zero; discount is
+  // clamped 0..100; tax_rate is clamped 0..1; final total is floored at 0.
+  const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+  const clamp0_100 = (n: number) => Math.max(0, Math.min(100, n));
+  const safeQty = (n: unknown) => Math.max(0, Number.isFinite(Number(n)) ? Number(n) : 0);
+  const subtotal = Math.max(
+    0,
+    items.reduce((s, r) => s + safeQty(r.qty) * safeQty(r.unit_price), 0),
+  );
+  const discountPct = clamp0_100(Number(draft.discount_percent ?? 0));
+  const taxRate = clamp01(Number(draft.tax_rate ?? 0));
+  const discountAmt = subtotal * (discountPct / 100);
   const taxableBase = subtotal - discountAmt;
-  const taxAmt = taxableBase * Number(draft.tax_rate ?? 0);
-  const total = taxableBase + taxAmt;
+  const taxAmt = taxableBase * taxRate;
+  const total = Math.max(0, taxableBase + taxAmt);
 
   // ---------- mutations ----------
   const addRow = () => {
@@ -181,6 +192,16 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
 
   const changeStatus = (next: EstimateStatus) => {
     const prev = status;
+    // Guardrail: sending an estimate with no priced work is almost always a
+    // misclick. Ask the user to confirm before flipping the status.
+    if (next === "sent" && (items.length === 0 || subtotal <= 0)) {
+      const ok = confirm(
+        items.length === 0
+          ? "This estimate has no line items. Mark as sent anyway?"
+          : "The subtotal is $0. Mark as sent anyway?",
+      );
+      if (!ok) return;
+    }
     setStatus(next);
     startTransition(async () => {
       try {
@@ -238,7 +259,7 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
                 <div className="text-foreground font-medium">
                   Estimate #{estimate.id.slice(0, 8).toUpperCase()}
                 </div>
-                <div>{new Date(estimate.created_at).toLocaleDateString()}</div>
+                <div>{formatDate(estimate.created_at)}</div>
               </div>
             </div>
 
@@ -347,9 +368,10 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
                       <Input
                         type="number"
                         step="0.01"
+                        min={0}
                         inputMode="decimal"
                         value={r.qty}
-                        onChange={(e) => updateRow(r.id, { qty: Number(e.target.value) })}
+                        onChange={(e) => updateRow(r.id, { qty: Math.max(0, Number(e.target.value)) })}
                         onBlur={() => saveRow(r.id)}
                         className="h-9 w-20 text-right"
                       />
@@ -368,14 +390,19 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
                       <Input
                         type="number"
                         step="0.01"
+                        min={0}
                         inputMode="decimal"
                         value={r.unit_price}
-                        onChange={(e) => updateRow(r.id, { unit_price: Number(e.target.value) })}
+                        onChange={(e) =>
+                          updateRow(r.id, { unit_price: Math.max(0, Number(e.target.value)) })
+                        }
                         onBlur={() => saveRow(r.id)}
                         className="h-9 w-28 text-right"
                       />
                     </td>
-                    <td className="py-2 pr-2 text-right font-medium">{formatCurrency(Number(r.qty) * Number(r.unit_price))}</td>
+                    <td className="py-2 pr-2 text-right font-medium">
+                      {formatCurrency(safeQty(r.qty) * safeQty(r.unit_price))}
+                    </td>
                     <td className="py-2 text-right">
                       <Button
                         variant="ghost"
@@ -406,9 +433,13 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
                     id="disc"
                     type="number"
                     step="0.01"
+                    min={0}
+                    max={100}
                     inputMode="decimal"
                     value={draft.discount_percent}
-                    onChange={(e) => setField("discount_percent", Number(e.target.value))}
+                    onChange={(e) =>
+                      setField("discount_percent", Math.max(0, Math.min(100, Number(e.target.value))))
+                    }
                     onBlur={saveHeader}
                     className="h-9 w-20 text-right"
                   />
@@ -425,9 +456,16 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
                     id="tax"
                     type="number"
                     step="0.001"
+                    min={0}
+                    max={100}
                     inputMode="decimal"
                     value={(draft.tax_rate * 100).toFixed(2)}
-                    onChange={(e) => setField("tax_rate", Number(e.target.value) / 100)}
+                    onChange={(e) =>
+                      setField(
+                        "tax_rate",
+                        Math.max(0, Math.min(100, Number(e.target.value))) / 100,
+                      )
+                    }
                     onBlur={saveHeader}
                     className="h-9 w-20 text-right"
                   />

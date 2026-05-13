@@ -33,13 +33,16 @@ export default async function AnalyticsPage() {
     count: rows.filter((r) => r.type === t).length,
   }));
 
+  // Use em-dash placeholders so a fresh workspace doesn't render "$0" / "0%"
+  // and look like a real stat. Only show numbers once we have something to
+  // base them on.
   const kpis = [
-    { label: "Total projects", value: total },
-    { label: "Conversion rate", value: `${conversion}%` },
-    { label: "Avg won project value", value: formatCurrency(avgValue) },
-    { label: "Active pipeline", value: formatCurrency(pipeline) },
-    { label: "Won", value: won },
-    { label: "Lost", value: lost },
+    { label: "Total projects", value: total === 0 ? "—" : String(total) },
+    { label: "Conversion rate", value: total === 0 ? "—" : `${conversion}%` },
+    { label: "Avg won project value", value: won === 0 ? "—" : formatCurrency(avgValue) },
+    { label: "Active pipeline", value: pipeline === 0 ? "—" : formatCurrency(pipeline) },
+    { label: "Won", value: total === 0 ? "—" : String(won) },
+    { label: "Lost", value: total === 0 ? "—" : String(lost) },
   ];
 
   return (

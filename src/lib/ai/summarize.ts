@@ -29,8 +29,13 @@ export function buildLocalSummary(input: ProjectSummaryInput): ProjectSummary {
   const primaryBath = answersBySet["bathroom_v1::primary_bath"] ?? {};
   const fullHome = answersBySet["full_home_v1"] ?? {};
 
-  const styleTokens = (kitchen.style as string[] | undefined)?.join(", ") || "transitional";
-  const palette = (kitchen.palette as string[] | undefined)?.join(", ") || "warm neutrals";
+  // Only use the actual style / palette tokens the user picked. No silent
+  // defaults — those leaked "transitional / warm neutrals" into reports
+  // for clients who never specified them.
+  const styleArr = Array.isArray(kitchen.style) ? (kitchen.style as string[]) : [];
+  const paletteArr = Array.isArray(kitchen.palette) ? (kitchen.palette as string[]) : [];
+  const styleTokens = styleArr.length > 0 ? styleArr.join(", ") : null;
+  const palette = paletteArr.length > 0 ? paletteArr.join(", ") : null;
 
   const client_summary = [
     `${c?.full_name ?? "Client"} — ${p.title}.`,
@@ -56,14 +61,15 @@ export function buildLocalSummary(input: ProjectSummaryInput): ProjectSummary {
     .filter((s): s is string => !!s)
     .map((s) => s.trim());
 
-  const design_direction = [
-    `Style: ${styleTokens}.`,
-    `Palette: ${palette}.`,
-    p.design_boldness != null ? `Boldness ${p.design_boldness}/100.` : "",
-    p.luxury_level != null ? `Luxury ${p.luxury_level}/100.` : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const design_direction =
+    [
+      styleTokens ? `Style: ${styleTokens}.` : "",
+      palette ? `Palette: ${palette}.` : "",
+      p.design_boldness != null ? `Boldness ${p.design_boldness}/100.` : "",
+      p.luxury_level != null ? `Luxury ${p.luxury_level}/100.` : "",
+    ]
+      .filter(Boolean)
+      .join(" ") || "Style and palette not yet captured — confirm with the client before sharing.";
 
   const scope_draft: ProjectSummary["scope_draft"] = [];
   if (p.type === "kitchen" || p.rooms.includes("kitchen")) {
@@ -100,24 +106,33 @@ export function buildLocalSummary(input: ProjectSummaryInput): ProjectSummary {
     });
   }
 
-  const suggested_materials: ProjectSummary["suggested_materials"] = [
-    {
-      category: "Countertop",
-      suggestions:
-        kitchen.counter_material === "marble"
-          ? ["Honed Carrara", "Calacatta Gold (book-matched)"]
-          : kitchen.counter_material === "quartzite"
-            ? ["Taj Mahal", "Mont Blanc"]
-            : ["Calacatta Nuvo Quartz", "Statuario Maximus Quartz"],
-    },
-    {
-      category: "Cabinetry",
-      suggestions:
-        kitchen.cabinet_door === "slab"
-          ? ["Walnut veneer slab", "Rift white oak slab"]
-          : ["Inset shaker — painted (BM White Dove)", "Beaded inset — soft white"],
-    },
-  ];
+  // Only suggest materials when the client actually picked something — otherwise
+  // the report makes brand-specific recommendations the consultant never
+  // discussed. The category-by-category fallbacks live inside each branch
+  // so we never invent a counter_material the user didn't choose.
+  const suggested_materials: ProjectSummary["suggested_materials"] = [];
+  if (kitchen.counter_material) {
+    const m = kitchen.counter_material as string;
+    const list =
+      m === "marble"
+        ? ["Honed Carrara", "Calacatta Gold (book-matched)"]
+        : m === "quartzite"
+          ? ["Taj Mahal", "Mont Blanc"]
+          : m === "quartz"
+            ? ["Calacatta Nuvo Quartz", "Statuario Maximus Quartz"]
+            : null;
+    if (list) suggested_materials.push({ category: `Countertop · ${m}`, suggestions: list });
+  }
+  if (kitchen.cabinet_door) {
+    const door = kitchen.cabinet_door as string;
+    const list =
+      door === "slab"
+        ? ["Walnut veneer slab", "Rift white oak slab"]
+        : door === "shaker"
+          ? ["Inset shaker — painted (BM White Dove)", "Beaded inset — soft white"]
+          : null;
+    if (list) suggested_materials.push({ category: `Cabinetry · ${door}`, suggestions: list });
+  }
 
   const missing_information: string[] = [];
   if (p.budget_ideal == null) missing_information.push("Budget — ideal target");

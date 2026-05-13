@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createAppointmentAction } from "@/lib/actions/appointments";
+import { cn } from "@/lib/utils";
 
 export interface ProjectOption {
   id: string;
@@ -89,7 +90,23 @@ export function NewAppointmentDialog({ projects, defaultProjectId, trigger }: Pr
     if (!ends || new Date(ends) <= new Date(v)) setEnds(defaultEnd(v));
   };
 
+  // Client-side guards so we never round-trip an obviously-broken time.
+  const startMs = new Date(starts).getTime();
+  const endMs = new Date(ends).getTime();
+  const startInvalid = !starts || Number.isNaN(startMs);
+  const endInvalid = !ends || Number.isNaN(endMs);
+  const orderInvalid = !startInvalid && !endInvalid && endMs <= startMs;
+  const formInvalid = startInvalid || endInvalid || orderInvalid;
+
   const submit = () => {
+    if (startInvalid || endInvalid) {
+      toast.warning("Pick both a start and end time.");
+      return;
+    }
+    if (orderInvalid) {
+      toast.warning("End time must be after the start time.");
+      return;
+    }
     const project = projects.find((p) => p.id === projectId);
     startTransition(async () => {
       try {
@@ -167,7 +184,18 @@ export function NewAppointmentDialog({ projects, defaultProjectId, trigger }: Pr
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="appt-ends">Ends</Label>
-              <Input id="appt-ends" type="datetime-local" value={ends} onChange={(e) => setEnds(e.target.value)} />
+              <Input
+                id="appt-ends"
+                type="datetime-local"
+                value={ends}
+                min={starts || undefined}
+                onChange={(e) => setEnds(e.target.value)}
+                aria-invalid={orderInvalid}
+                className={cn(orderInvalid && "border-destructive ring-1 ring-destructive")}
+              />
+              {orderInvalid && (
+                <p className="text-xs text-destructive">End time must be after the start time.</p>
+              )}
             </div>
           </div>
 
@@ -195,7 +223,7 @@ export function NewAppointmentDialog({ projects, defaultProjectId, trigger }: Pr
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={isPending}>Cancel</Button>
-          <Button onClick={submit} disabled={isPending}>
+          <Button onClick={submit} disabled={isPending || formInvalid}>
             {isPending ? "Saving…" : "Schedule"}
           </Button>
         </DialogFooter>

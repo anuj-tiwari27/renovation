@@ -65,3 +65,42 @@ export function missingRequired(set: QuestionSet, answers: Answers): Field[] {
   }
   return missing;
 }
+
+/**
+ * Cross-field validations that aren't expressible by `required` or `showWhen`.
+ * Returns a list of human-readable error messages — empty array = OK.
+ *
+ * Validations are keyed by set.slug so a schema author can ignore this file
+ * for additive changes; only contributors writing budgets etc. touch it.
+ */
+export function validateSet(set: QuestionSet, answers: Answers): string[] {
+  const errors: string[] = [];
+
+  if (set.slug === "budget_v1") {
+    const min = numOrNull(answers["budget_min"]);
+    const ideal = numOrNull(answers["budget_ideal"]);
+    const max = numOrNull(answers["budget_max"]);
+
+    if (min != null && min < 0) errors.push("Minimum budget can't be negative.");
+    if (ideal != null && ideal < 0) errors.push("Ideal budget can't be negative.");
+    if (max != null && max < 0) errors.push("Maximum budget can't be negative.");
+
+    if (min != null && ideal != null && min > ideal) {
+      errors.push("Minimum budget must be less than or equal to the ideal budget.");
+    }
+    if (ideal != null && max != null && ideal > max) {
+      errors.push("Ideal budget must be less than or equal to the maximum.");
+    }
+    if (min != null && max != null && min > max) {
+      errors.push("Minimum budget must be less than or equal to the maximum.");
+    }
+  }
+
+  return errors;
+}
+
+function numOrNull(v: unknown): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}

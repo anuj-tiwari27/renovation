@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ImageIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Thumbnail } from "@/components/media/thumbnail";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
@@ -114,11 +115,11 @@ export default async function InspirationPage() {
                       >
                         <div className="aspect-square bg-muted">
                           {isImage ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <Thumbnail
                               src={m.url}
                               alt={m.caption ?? "Inspiration"}
                               loading="lazy"
+                              fallbackLabel="Preview unavailable"
                               className="h-full w-full object-cover transition group-hover:scale-[1.02]"
                             />
                           ) : (
