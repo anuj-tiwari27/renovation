@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { env } from "@/lib/env";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: { default: env.NEXT_PUBLIC_APP_NAME, template: `%s · ${env.NEXT_PUBLIC_APP_NAME}` },
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body>
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
