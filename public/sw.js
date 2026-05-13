@@ -6,17 +6,18 @@
  *  - POST/PUT/PATCH/DELETE for mutating endpoints: queued via Background Sync (handled in app via IndexedDB; SW relays the trigger)
  */
 
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v6";
 const PRECACHE = `precache-${CACHE_VERSION}`;
 const RUNTIME = `runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
   "/",
   "/offline",
   "/manifest.webmanifest",
-  "/brand/icon.png",
   "/brand/logo.png",
   "/icons/192",
   "/icons/512",
+  "/icons/maskable/192",
+  "/icons/maskable/512",
 ];
 
 self.addEventListener("install", (event) => {

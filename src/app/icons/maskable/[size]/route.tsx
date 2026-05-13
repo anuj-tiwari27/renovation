@@ -8,13 +8,16 @@ export const dynamic = "force-static";
 const ALLOWED = new Set([192, 384, 512]);
 
 /**
- * Manifest PWA icons (full / "any" purpose).
+ * Maskable PWA icons.
  *
- * Composites the user's logo PNG centered on a solid black square. The logo
- * file is read at request time and embedded as a base64 data URL so Satori
- * (the renderer behind next/og) doesn't have to make an HTTP fetch.
+ * Android's adaptive icon system crops the artwork to whatever shape the
+ * launcher uses (circle, squircle, rounded square). The spec requires the
+ * critical part of the icon to live inside the central 80% — the
+ * "safe zone". Outside that zone may get cropped.
  *
- * Maskable variants (with a safe-zone) live at /icons/maskable/[size].
+ * We render the wordmark scaled to 62% of the canvas (well inside the safe
+ * zone) on the solid brand-black background so the crop never clips the
+ * logo and never reveals a transparent area for the OS to theme.
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ size: string }> }) {
   const { size: raw } = await ctx.params;
@@ -42,7 +45,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ size: string }
         <img
           src={dataUrl}
           alt=""
-          style={{ width: "82%", height: "82%", objectFit: "contain" }}
+          style={{
+            // 62% keeps the wordmark fully inside Android's safe zone.
+            width: "62%",
+            height: "62%",
+            objectFit: "contain",
+          }}
         />
       </div>
     ),
