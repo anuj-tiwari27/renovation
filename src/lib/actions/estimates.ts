@@ -30,15 +30,31 @@ export async function recomputeEstimateTotalsAction(estimateId: string) {
     .from("scope_items")
     .select("total")
     .eq("estimate_id", estimateId);
-  const { data: est } = await supa
-    .from("estimates")
-    .select("tax_rate, discount_percent")
-    .eq("id", estimateId)
-    .maybeSingle();
+  // Tolerate the case where migration 0002 hasn't been run yet (discount_percent missing).
+  let discountPct = 0;
+  let taxRate = 0;
+  try {
+    const { data: est, error } = await supa
+      .from("estimates")
+      .select("tax_rate, discount_percent")
+      .eq("id", estimateId)
+      .maybeSingle();
+    if (!error && est) {
+      const row = est as { tax_rate: number | null; discount_percent: number | null };
+      taxRate = Number(row.tax_rate ?? 0);
+      discountPct = Number(row.discount_percent ?? 0);
+    }
+  } catch {
+    // Column missing — fall back to tax_rate only.
+    const { data: est } = await supa
+      .from("estimates")
+      .select("tax_rate")
+      .eq("id", estimateId)
+      .maybeSingle();
+    if (est) taxRate = Number((est as { tax_rate: number | null }).tax_rate ?? 0);
+  }
   const itemsTyped = (items as Array<{ total: number }> | null) ?? [];
   const subtotal = itemsTyped.reduce((s, r) => s + Number(r.total ?? 0), 0);
-  const discountPct = Number(est?.discount_percent ?? 0);
-  const taxRate = Number(est?.tax_rate ?? 0);
   const afterDiscount = subtotal * (1 - discountPct / 100);
   const total = afterDiscount * (1 + taxRate);
   const { error } = await supa
@@ -61,13 +77,17 @@ export interface ScopeItemInput {
 
 export async function addScopeItemAction(estimateId: string, item: ScopeItemInput) {
   const supa = await createClient();
-  const { data: existing } = await supa
+  const { data: existing, error: posErr } = await supa
     .from("scope_items")
     .select("position")
     .eq("estimate_id", estimateId)
     .order("position", { ascending: false })
     .limit(1);
-  const nextPos = Number(((existing as Array<{ position: number }> | null) ?? [{ position: -1 }])[0].position) + 1;
+  if (posErr) throw new Error(`Looking up next position: ${posErr.message}`);
+  // `data` is `[]` (not null) when there are no rows; the old `?? []` fallback
+  // doesn't fire and `[0].position` would throw.
+  const rows = (existing as Array<{ position: number }> | null) ?? [];
+  const nextPos = rows.length > 0 ? Number(rows[0].position) + 1 : 0;
   const { data, error } = await supa
     .from("scope_items")
     .insert({
@@ -173,7 +193,16 @@ export async function syncBillToFromClientAction(
   };
 
   const { error: upErr } = await supa.from("estimates").update(values).eq("id", estimateId);
-  if (upErr) throw new Error(`update bill_to: ${upErr.message}`);
+  if (upErr) {
+    // The most likely cause is migration 0002_estimate_extras.sql not being
+    // run yet (bill_to_* columns missing). Surface a precise message instead
+    // of leaking a Postgres-y "column ... does not exist".
+    const msg =
+      upErr.message.includes("column") && upErr.message.includes("does not exist")
+        ? "Estimate columns missing — run supabase/migrations/0002_estimate_extras.sql in the Supabase SQL editor, then try again."
+        : `update bill_to: ${upErr.message}`;
+    throw new Error(msg);
+  }
   return { ok: true, values };
 }
 

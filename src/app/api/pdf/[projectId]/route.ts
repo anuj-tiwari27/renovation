@@ -66,7 +66,7 @@ async function buildDiscoveryHtml(
     (await aiSummarize({ project: p, client: c, answersBySet })) ??
     buildLocalSummary({ project: p, client: c, answersBySet });
 
-  const logoUrl = `${origin}/brand/icon.png`;
+  const logoUrl = `${origin}/brand/logo.png`;
   const companyName = env.NEXT_PUBLIC_COMPANY_NAME;
 
   return wrap({
@@ -196,7 +196,7 @@ async function buildEstimateHtml(
         .join("\n"),
   };
 
-  const logoUrl = `${origin}/brand/icon.png`;
+  const logoUrl = `${origin}/brand/logo.png`;
   const companyName = env.NEXT_PUBLIC_COMPANY_NAME;
 
   // Group items by category
@@ -352,11 +352,8 @@ function wrap({ title, body }: { title: string; body: string }): string {
     padding-bottom: 14pt;
     margin-bottom: 18pt;
   }
-  .brand { display: flex; align-items: center; gap: 12pt; }
-  .brand img { width: 56pt; height: 56pt; object-fit: contain; border-radius: 8pt; background: #0b0b0b; }
-  .brand-text .name { font-family: Georgia, "Times New Roman", serif; font-size: 13pt; font-weight: 700; letter-spacing: 1pt; }
-  .brand-text .name span { color: var(--gold); }
-  .brand-text .tag { font-size: 8.5pt; letter-spacing: 2pt; text-transform: uppercase; color: var(--muted); margin-top: 2pt; }
+  .brand { display: flex; align-items: center; gap: 12pt; max-width: 240pt; }
+  .brand img { width: 100%; max-width: 240pt; max-height: 110pt; height: auto; object-fit: contain; border-radius: 6pt; background: #0b0b0b; }
   .header-meta { text-align: right; }
   .header-meta .eyebrow { color: var(--gold); }
 
@@ -418,7 +415,7 @@ ${body}
 
 function header(args: {
   logoUrl: string;
-  companyName: string;
+  companyName: string; // accepted but the wordmark contains it visually
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -426,11 +423,7 @@ function header(args: {
   return `
     <div class="top">
       <div class="brand">
-        <img src="${escapeHtml(args.logoUrl)}" alt="">
-        <div class="brand-text">
-          <div class="name">${escapeHtml(args.companyName)}</div>
-          <div class="tag">Kitchen · Bath · Full Home</div>
-        </div>
+        <img src="${escapeHtml(args.logoUrl)}" alt="${escapeHtml(args.companyName)}">
       </div>
       <div class="header-meta">
         <div class="eyebrow">${escapeHtml(args.eyebrow)}</div>

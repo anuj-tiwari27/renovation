@@ -13,8 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BrandMark } from "@/components/brand";
-import { env } from "@/lib/env";
+import { BrandLogo } from "@/components/brand";
 import { formatCurrency, cn } from "@/lib/utils";
 import type { Estimate, ScopeItem, EstimateStatus, Project } from "@/lib/supabase/database.types";
 import {
@@ -233,12 +232,13 @@ export function EstimateEditor({ estimate, project, items: initialItems }: Props
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 lg:grid-cols-[auto_1fr_1fr]">
-            <div className="flex items-start gap-3">
-              <BrandMark size={56} />
-              <div className="text-sm">
-                <div className="font-semibold">{env.NEXT_PUBLIC_COMPANY_NAME}</div>
-                <div className="text-muted-foreground">Estimate #{estimate.id.slice(0, 8).toUpperCase()}</div>
-                <div className="text-muted-foreground">{new Date(estimate.created_at).toLocaleDateString()}</div>
+            <div className="flex flex-col items-start gap-3">
+              <BrandLogo height={72} className="max-w-[220px]" />
+              <div className="text-xs text-muted-foreground">
+                <div className="text-foreground font-medium">
+                  Estimate #{estimate.id.slice(0, 8).toUpperCase()}
+                </div>
+                <div>{new Date(estimate.created_at).toLocaleDateString()}</div>
               </div>
             </div>
 
